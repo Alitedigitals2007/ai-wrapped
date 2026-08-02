@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AI_OPTIONS, AI_EMOJI } from "@/lib/analysis/prompt";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Search, Download, Eye, Trash2, LogOut, Loader2, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -161,8 +162,8 @@ export default function AdminDashboard() {
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-8 pb-16">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-600/15 blur-[120px]" />
-        <div className="absolute bottom-0 left-0 size-96 rounded-full bg-fuchsia-600/10 blur-[120px]" />
+        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/15 blur-[120px]" />
+        <div className="absolute bottom-0 left-0 size-96 rounded-full bg-fuchsia-400/25 dark:bg-fuchsia-600/10 blur-[120px]" />
       </div>
 
       <div className="mx-auto max-w-6xl space-y-6">
@@ -175,7 +176,8 @@ export default function AdminDashboard() {
               {total} submission{total === 1 ? "" : "s"} · average score {avgScore}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <ThemeToggle />
             <Button variant="outline" onClick={exportCsv}>
               <Download className="mr-2 size-4" /> Export CSV
             </Button>
@@ -274,10 +276,10 @@ export default function AdminDashboard() {
                         className={cn(
                           "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums",
                           r.overallScore >= 75
-                            ? "bg-emerald-500/15 text-emerald-300"
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
                             : r.overallScore >= 55
-                              ? "bg-amber-500/15 text-amber-300"
-                              : "bg-white/10 text-muted-foreground"
+                              ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                              : "bg-black/5 text-muted-foreground dark:bg-white/10"
                         )}
                       >
                         {r.overallScore}
@@ -288,7 +290,7 @@ export default function AdminDashboard() {
                     </TableCell>
                     <TableCell className="text-muted-foreground whitespace-nowrap">{fmtDate(r.createdAt)}</TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
+                      <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                         Completed
                       </span>
                     </TableCell>
@@ -308,6 +310,10 @@ export default function AdminDashboard() {
             </TableBody>
           </Table>
         </div>
+
+        <p className="text-center text-xs text-muted-foreground/60 pt-4">
+          Built by <span className="font-semibold text-muted-foreground">Alite</span> · AI Wrapped Admin
+        </p>
       </div>
 
       <Dialog open={!!toDelete} onOpenChange={(open) => !open && setToDelete(null)}>

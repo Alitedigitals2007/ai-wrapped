@@ -2,6 +2,7 @@ export interface Profile {
   username: string;
   aiUsed: string;
   generatedDate: string;
+  engine?: "groq" | "openai" | "local";
 }
 
 export interface Personality {

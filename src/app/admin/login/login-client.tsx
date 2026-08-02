@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Lock } from "lucide-react";
 
 export default function AdminLogin() {
@@ -42,8 +43,11 @@ export default function AdminLogin() {
   return (
     <main className="relative flex-1 min-h-screen grid place-items-center px-4">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-violet-600/20 blur-[130px]" />
-        <div className="absolute bottom-1/4 right-1/4 size-96 rounded-full bg-fuchsia-600/20 blur-[130px]" />
+        <div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/20 blur-[130px]" />
+        <div className="absolute bottom-1/4 right-1/4 size-96 rounded-full bg-fuchsia-400/25 dark:bg-fuchsia-600/20 blur-[130px]" />
+      </div>
+      <div className="fixed top-4 right-4">
+        <ThemeToggle />
       </div>
       <form onSubmit={submit} className="glass rounded-3xl p-8 w-full max-w-sm">
         <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600">
@@ -71,6 +75,9 @@ export default function AdminLogin() {
         <Link href="/" className="mt-4 block text-center text-sm text-muted-foreground hover:text-foreground">
           ← Back to site
         </Link>
+        <p className="mt-6 text-center text-xs text-muted-foreground/70">
+          Built by <span className="font-semibold text-muted-foreground">Alite</span>
+        </p>
       </form>
     </main>
   );

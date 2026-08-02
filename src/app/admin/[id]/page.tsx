@@ -7,6 +7,7 @@ import type { Analysis } from "@/lib/analysis/types";
 import { AI_EMOJI } from "@/lib/analysis/prompt";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ function Section({
 
 function KV({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-white/5 bg-white/[0.03] p-3.5">
+    <div className="rounded-xl border border-black/10 bg-black/[0.03] p-3.5 dark:border-white/5 dark:bg-white/[0.03]">
       <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-1 font-medium text-sm leading-snug">{value || "—"}</div>
     </div>
@@ -108,7 +109,7 @@ export default function AdminDetails() {
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-8 pb-16">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-600/15 blur-[120px]" />
+        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/15 blur-[120px]" />
       </div>
 
       <div className="mx-auto max-w-4xl space-y-6">
@@ -119,9 +120,12 @@ export default function AdminDetails() {
           >
             <ArrowLeft className="size-4" /> Dashboard
           </Link>
-          <Button variant="outline" size="sm" onClick={() => router.refresh()}>
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="outline" size="sm" onClick={() => router.refresh()}>
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <div className="glass rounded-3xl p-6 flex flex-wrap items-center gap-4">
@@ -139,6 +143,13 @@ export default function AdminDetails() {
           <div className="ml-auto text-right">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Overall Score</div>
             <div className="font-display text-4xl font-bold text-gradient">{a.scores.overall}</div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
+              {a.profile.engine === "groq"
+                ? "⚡ Groq"
+                : a.profile.engine === "openai"
+                  ? "✦ OpenAI"
+                  : "⚙️ Local analysis"}
+            </div>
           </div>
         </div>
 
@@ -169,14 +180,14 @@ export default function AdminDetails() {
         <Section title="📊 Scores">
           <div className="grid gap-3 sm:grid-cols-3">
             {Object.entries(a.scores).map(([key, value]) => (
-              <div key={key} className="rounded-xl border border-white/5 bg-white/[0.03] p-3.5">
+              <div key={key} className="rounded-xl border border-black/10 bg-black/[0.03] p-3.5 dark:border-white/5 dark:bg-white/[0.03]">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] uppercase tracking-wider text-muted-foreground capitalize">
                     {key.replace(/([A-Z])/g, " $1")}
                   </span>
                   <span className="font-bold tabular-nums">{value}</span>
                 </div>
-                <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="mt-2 h-1.5 rounded-full bg-black/10 overflow-hidden dark:bg-white/10">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
                     style={{ width: `${value}%` }}
@@ -225,7 +236,7 @@ export default function AdminDetails() {
         <Section title="💪 Strengths">
           <div className="flex flex-wrap gap-2">
             {a.strengths.map((s) => (
-              <Badge key={s} className="bg-emerald-500/15 text-emerald-300 border-emerald-500/20">{s}</Badge>
+              <Badge key={s} className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/20">{s}</Badge>
             ))}
           </div>
         </Section>
@@ -249,7 +260,7 @@ export default function AdminDetails() {
         <Section title="🏆 Achievements">
           <div className="flex flex-wrap gap-2">
             {a.achievements.map((badge) => (
-              <Badge key={badge} className="bg-amber-500/15 text-amber-300 border-amber-500/20">🏅 {badge}</Badge>
+              <Badge key={badge} className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/20">🏅 {badge}</Badge>
             ))}
           </div>
         </Section>
@@ -281,7 +292,7 @@ export default function AdminDetails() {
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
                 Original Prompt
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap max-h-64 overflow-y-auto rounded-xl border border-white/5 bg-white/[0.03] p-4">
+              <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap max-h-64 overflow-y-auto rounded-xl border border-black/10 bg-black/[0.03] p-4 dark:border-white/5 dark:bg-white/[0.03]">
                 {data.prompt}
               </p>
             </div>
@@ -289,7 +300,7 @@ export default function AdminDetails() {
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
                 AI Response
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap max-h-80 overflow-y-auto rounded-xl border border-white/5 bg-white/[0.03] p-4">
+              <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap max-h-80 overflow-y-auto rounded-xl border border-black/10 bg-black/[0.03] p-4 dark:border-white/5 dark:bg-white/[0.03]">
                 {data.response}
               </p>
             </div>

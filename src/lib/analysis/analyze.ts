@@ -1,19 +1,30 @@
 import { analyzeWithLLM } from "./llm";
 import { analyzeLocally } from "./fallback";
 import type { Analysis } from "./types";
-import { mergeAnalysis } from "./types";
+
+export type AnalysisEngine = "groq" | "openai" | "local";
 
 export async function analyzeResponse(input: {
   username: string;
   aiUsed: string;
   text: string;
-}): Promise<{ analysis: Analysis; engine: "cerebras" | "openai" | "local" }> {
+}): Promise<{ analysis: Analysis; engine: AnalysisEngine }> {
   const llmResult = await analyzeWithLLM(input);
   if (llmResult) {
     return {
-      analysis: mergeAnalysis(llmResult),
-      engine: process.env.CEREBRAS_API_KEY ? "cerebras" : "openai",
+      analysis: {
+        ...llmResult.analysis,
+        profile: { ...llmResult.analysis.profile, engine: llmResult.provider },
+      },
+      engine: llmResult.provider,
     };
   }
-  return { analysis: analyzeLocally(input), engine: "local" };
+  const local = analyzeLocally(input);
+  return {
+    analysis: {
+      ...local,
+      profile: { ...local.profile, engine: "local" },
+    },
+    engine: "local",
+  };
 }

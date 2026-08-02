@@ -3,14 +3,28 @@ import { ANALYSIS_SYSTEM_PROMPT, buildAnalysisUserPrompt } from "./prompt";
 import type { Analysis } from "./types";
 import { mergeAnalysis } from "./types";
 
-function clientFor(): OpenAI | null {
-  const cerebrasKey = process.env.CEREBRAS_API_KEY;
-  if (cerebrasKey) {
-    return new OpenAI({ apiKey: cerebrasKey, baseURL: "https://api.cerebras.ai/v1" });
+export type EngineProvider = "groq" | "openai";
+
+type ClientConfig = {
+  client: OpenAI;
+  provider: EngineProvider;
+  model: string;
+};
+
+function clientConfig(): ClientConfig | null {
+  if (process.env.GROQ_API_KEY) {
+    return {
+      client: new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" }),
+      provider: "groq",
+      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+    };
   }
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (openaiKey) {
-    return new OpenAI({ apiKey: openaiKey });
+  if (process.env.OPENAI_API_KEY) {
+    return {
+      client: new OpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+      provider: "openai",
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+    };
   }
   return null;
 }
@@ -19,14 +33,11 @@ export async function analyzeWithLLM(input: {
   username: string;
   aiUsed: string;
   text: string;
-}): Promise<Analysis | null> {
-  const client = clientFor();
-  if (!client) return null;
+}): Promise<{ analysis: Analysis; provider: EngineProvider } | null> {
+  const config = clientConfig();
+  if (!config) return null;
 
-  const model =
-    process.env.CEREBRAS_MODEL ||
-    process.env.OPENAI_MODEL ||
-    "llama-3.3-70b";
+  const { client, provider, model } = config;
 
   try {
     const completion = await client.chat.completions.create(
@@ -64,9 +75,11 @@ export async function analyzeWithLLM(input: {
         generatedDate: new Date().toISOString(),
       },
     };
-    return mergeAnalysis(withProfile as Partial<Analysis>);
+    return { analysis: mergeAnalysis(withProfile as Partial<Analysis>), provider };
   } catch (error) {
-    console.error("LLM analysis failed:", error);
+    const status = (error as { status?: number })?.status;
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`LLM analysis failed (${provider}, ${status ?? "unknown status"}): ${message}`);
     return null;
   }
 }

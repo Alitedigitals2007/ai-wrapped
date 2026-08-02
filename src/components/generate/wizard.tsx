@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, ArrowLeft, ArrowRight, Copy, Check, RefreshCw } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const LOADING_MESSAGES = [
@@ -112,10 +113,10 @@ function StepAI() {
             key={ai.value}
             onClick={() => setAiUsed(ai.value)}
             className={cn(
-              "glass rounded-2xl p-4 text-left transition-all hover:bg-white/[0.08] border",
+              "glass rounded-2xl p-4 text-left transition-all hover:bg-black/5 dark:hover:bg-white/[0.08] border",
               aiUsed === ai.value
                 ? "border-fuchsia-400/70 bg-fuchsia-500/15 ring-2 ring-fuchsia-400/40"
-                : "border-white/10"
+                : "border-black/10 dark:border-white/10"
             )}
           >
             <div className="text-2xl">{ai.emoji}</div>
@@ -167,7 +168,7 @@ function StepPrompt() {
             Your magic prompt
           </span>
           <Button size="sm" variant="outline" onClick={copy}>
-            {copied ? <Check className="mr-1.5 size-4 text-emerald-400" /> : <Copy className="mr-1.5 size-4" />}
+            {copied ? <Check className="mr-1.5 size-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="mr-1.5 size-4" />}
             {copied ? "Copied!" : "Copy Prompt"}
           </Button>
         </div>
@@ -211,7 +212,7 @@ function StepResponse() {
           className="text-sm leading-relaxed resize-y min-h-52"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span className={count >= MIN ? "text-emerald-400" : ""}>
+          <span className={count >= MIN ? "text-emerald-600 dark:text-emerald-400" : ""}>
             {count < MIN
               ? `Add at least ${MIN - count} more characters`
               : "Looks good! Ready to analyze."}
@@ -249,7 +250,7 @@ function StepGenerating() {
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="mx-auto size-24 rounded-full border-4 border-white/10 border-t-fuchsia-500 border-r-violet-500"
+        className="mx-auto size-24 rounded-full border-4 border-black/10 dark:border-white/10 border-t-fuchsia-500 border-r-violet-500"
       />
       <AnimatePresence mode="wait">
         <motion.p
@@ -318,11 +319,14 @@ export default function GenerateClient() {
   return (
     <main className="relative flex-1 px-4 pt-28 pb-16 min-h-screen overflow-hidden">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-600/20 blur-[120px]" />
-        <div className="absolute bottom-0 -left-32 size-96 rounded-full bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/20 blur-[120px]" />
+        <div className="absolute bottom-0 -left-32 size-96 rounded-full bg-cyan-400/25 dark:bg-cyan-500/10 blur-[120px]" />
       </div>
       <div className="mx-auto max-w-6xl">
-        <div className="mb-10 text-center">
+        <div className="mb-10 text-center relative">
+          <div className="absolute top-0 right-0">
+            <ThemeToggle />
+          </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
             Generate your <span className="text-gradient">Wrapped</span>
           </h1>
@@ -332,7 +336,7 @@ export default function GenerateClient() {
                 key={i}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
-                  i === step ? "w-8 bg-gradient-to-r from-violet-500 to-fuchsia-500" : "w-3 bg-white/15"
+                  i === step ? "w-8 bg-gradient-to-r from-violet-500 to-fuchsia-500" : "w-3 bg-black/15 dark:bg-white/15"
                 )}
               />
             ))}
@@ -358,6 +362,19 @@ export default function GenerateClient() {
             )}
           </motion.div>
         </AnimatePresence>
+        <div className="mt-14 flex flex-col items-center gap-1 text-sm text-muted-foreground">
+          <span>
+            Built by <span className="font-semibold text-foreground">Alite</span> ·{" "}
+            <a
+              href="https://wa.me/2349154681851?text=Well%20done%20on%20AI%20Wrapped%2C%20Alite!"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
+            >
+              Say hi on WhatsApp 💬
+            </a>
+          </span>
+        </div>
       </div>
     </main>
   );

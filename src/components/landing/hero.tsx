@@ -79,7 +79,7 @@ export function Hero() {
           </Link>
           <a
             href="#how"
-            className="glass rounded-full px-8 py-4 text-lg font-semibold hover:bg-white/[0.08] transition-colors"
+            className="glass rounded-full px-8 py-4 text-lg font-semibold hover:bg-black/5 dark:hover:bg-white/[0.08] transition-colors"
           >
             See how it works
           </a>
@@ -122,14 +122,14 @@ export function HowItWorks() {
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: i * 0.08 }}
             >
-              <span className="absolute top-4 right-5 font-display text-4xl font-bold text-white/5">
+              <span className="absolute top-4 right-5 font-display text-4xl font-bold text-black/5 dark:text-white/5">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div className="text-3xl">{step.emoji}</div>
               <h3 className="mt-4 font-semibold leading-snug">{step.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{step.text}</p>
               {i < steps.length - 1 && (
-                <span className="hidden lg:block absolute -right-4 top-1/2 -translate-y-1/2 text-white/20">
+                <span className="hidden lg:block absolute -right-4 top-1/2 -translate-y-1/2 text-black/10 dark:text-white/20">
                   →
                 </span>
               )}

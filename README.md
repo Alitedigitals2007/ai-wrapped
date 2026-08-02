@@ -10,12 +10,12 @@ shows every submission.
 
 ## Features
 
-- **Landing page** — hero, how it works, features, FAQ, footer (SEO-friendly, dark, animated)
+- **Landing page** — hero, how it works, features, FAQ, footer (SEO-friendly, light + dark, animated)
 - **5-step Generate flow** — username → pick AI → copy engineered prompt → paste AI's response → animated "Building your Wrapped…" loading
-- **12-card Wrapped viewer** — swipe on mobile, buttons + keyboard on desktop, lazy-loaded cards
+- **12-card Wrapped viewer** — swipe on mobile, buttons + keyboard on desktop, each card can be downloaded or shared individually with captions
 - **Share card** — Download PNG (html-to-image), native Share / copy link, Generate Again
 - **Analysis engine** — structured JSON with personality, 8 scores, language habits, interests, productivity, career matches, strengths, fun facts, achievements, predictions
-  - Primary: **Cerebras** (OpenAI-compatible API, `https://api.cerebras.ai/v1`)
+  - Primary: **Groq** (OpenAI-compatible API, free tier, `https://api.groq.com/openai/v1`)
   - Fallback: built-in deterministic analyzer — works with **zero API keys**
 - **Admin dashboard** — secure login, table with search, AI filter, date filter, sort by score, CSV export, delete, and a details page showing every extracted answer + original prompt/response
 
@@ -40,8 +40,8 @@ Copy `.env.example` to `.env` and fill in:
 | `DATABASE_URL` | ✅ | Your Neon PostgreSQL connection string |
 | `ADMIN_PASSWORD` | ✅ | Password for the admin dashboard |
 | `SESSION_SECRET` | ✅ | Long random string used to sign admin sessions |
-| `CEREBRAS_API_KEY` | ⬜ | Enables real AI analysis (get one at https://cloud.cerebras.ai). If empty, a local analyzer is used instead |
-| `CEREBRAS_MODEL` | ⬜ | Defaults to `llama-3.3-70b` |
+| `GROQ_API_KEY` | ⬜ | Enables real AI analysis (free key at https://console.groq.com/keys). If empty, a local analyzer is used instead |
+| `GROQ_MODEL` | ⬜ | Defaults to `llama-3.3-70b-versatile` (valid: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `openai/gpt-oss-120b`) |
 | `NEXT_PUBLIC_APP_URL` | ⬜ | Base URL used for share links |
 
 ### 3. Create the database tables
@@ -82,7 +82,7 @@ Open http://localhost:3000. Admin dashboard: http://localhost:3000/admin/login (
 ## Security & Secrets
 
 - `.env` is gitignored (via `.env*`) — **never commit it**. It contains your
-  `DATABASE_URL`, `CEREBRAS_API_KEY`, `ADMIN_PASSWORD`, and `SESSION_SECRET`.
+  `DATABASE_URL`, `GROQ_API_KEY`, `ADMIN_PASSWORD`, and `SESSION_SECRET`.
 - Only `.env.example` (safe placeholders) is tracked in the repo.
 - Never paste real API keys, passwords, or database URLs in issues, pull
   requests, or this README.
@@ -104,7 +104,7 @@ src/
     generate/             # Wizard steps
     wrapped/              # Wrapped cards + viewer
   lib/
-    analysis/             # Engineered prompt, Cerebras client, fallback analyzer, types
+    analysis/             # Engineered prompt, Groq client, fallback analyzer, types
     prisma.ts             # Prisma client singleton
     session.ts            # Admin session (jose)
   store/wizard.ts         # Zustand wizard state

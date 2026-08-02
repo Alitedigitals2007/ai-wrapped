@@ -6,36 +6,110 @@ import { SCORE_KEYS } from "@/lib/analysis/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const GRADIENTS = [
-  "from-violet-600/30 via-fuchsia-600/20 to-transparent",
-  "from-fuchsia-600/30 via-pink-600/20 to-transparent",
-  "from-cyan-500/25 via-sky-600/20 to-transparent",
-  "from-emerald-500/25 via-teal-600/20 to-transparent",
-  "from-amber-500/25 via-orange-600/20 to-transparent",
-];
+type CardTheme = {
+  bg: string;
+  orb: string;
+  orb2: string;
+};
+
+const THEMES: Record<string, CardTheme> = {
+  welcome: {
+    bg: "bg-gradient-to-br from-violet-600 via-fuchsia-600 to-cyan-500",
+    orb: "bg-white/25",
+    orb2: "bg-cyan-300/40",
+  },
+  personality: {
+    bg: "bg-gradient-to-br from-fuchsia-600 via-pink-600 to-rose-500",
+    orb: "bg-white/25",
+    orb2: "bg-amber-300/30",
+  },
+  thinking: {
+    bg: "bg-gradient-to-br from-cyan-600 via-sky-600 to-blue-600",
+    orb: "bg-white/25",
+    orb2: "bg-fuchsia-300/30",
+  },
+  scores: {
+    bg: "bg-gradient-to-br from-violet-700 via-purple-600 to-indigo-600",
+    orb: "bg-white/25",
+    orb2: "bg-cyan-300/30",
+  },
+  communication: {
+    bg: "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600",
+    orb: "bg-white/25",
+    orb2: "bg-amber-300/30",
+  },
+  interests: {
+    bg: "bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600",
+    orb: "bg-white/25",
+    orb2: "bg-violet-300/30",
+  },
+  strengths: {
+    bg: "bg-gradient-to-br from-teal-600 via-emerald-600 to-lime-600",
+    orb: "bg-white/25",
+    orb2: "bg-cyan-300/30",
+  },
+  fun: {
+    bg: "bg-gradient-to-br from-pink-600 via-fuchsia-600 to-purple-600",
+    orb: "bg-white/25",
+    orb2: "bg-cyan-300/30",
+  },
+  achievements: {
+    bg: "bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-500",
+    orb: "bg-white/25",
+    orb2: "bg-rose-300/30",
+  },
+  career: {
+    bg: "bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700",
+    orb: "bg-white/25",
+    orb2: "bg-emerald-300/30",
+  },
+  predictions: {
+    bg: "bg-gradient-to-br from-purple-700 via-violet-600 to-fuchsia-600",
+    orb: "bg-white/25",
+    orb2: "bg-cyan-300/30",
+  },
+  share: {
+    bg: "bg-gradient-to-br from-violet-700 via-fuchsia-600 to-cyan-500",
+    orb: "bg-white/25",
+    orb2: "bg-amber-300/30",
+  },
+};
 
 export function CardShell({
   children,
-  accent,
+  theme = "welcome",
   className,
 }: {
   children: React.ReactNode;
-  accent?: string;
+  theme?: string;
   className?: string;
 }) {
+  const t = THEMES[theme] ?? THEMES.welcome;
   return (
     <div
       className={cn(
-        "relative h-full w-full overflow-hidden rounded-[2rem] glass",
+        "relative h-full w-full overflow-hidden rounded-[2rem] text-white shadow-2xl shadow-black/40",
+        t.bg,
         className
       )}
     >
       <div
         aria-hidden
         className={cn(
-          "absolute -top-24 -right-24 size-72 rounded-full bg-gradient-to-br blur-[80px]",
-          accent ?? GRADIENTS[0]
+          "absolute -top-24 -right-24 size-80 rounded-full blur-[90px]",
+          t.orb
         )}
+      />
+      <div
+        aria-hidden
+        className={cn(
+          "absolute -bottom-28 -left-20 size-72 rounded-full blur-[90px]",
+          t.orb2
+        )}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/5 to-black/40"
       />
       <div className="relative h-full flex flex-col p-8 md:p-12 overflow-y-auto">
         {children}
@@ -46,7 +120,34 @@ export function CardShell({
 
 export function CardLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
+    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-white/60 font-semibold">
+      {children}
+    </div>
+  );
+}
+
+function Tile({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function TileLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[11px] uppercase tracking-wider text-white/55">
       {children}
     </div>
   );
@@ -72,7 +173,7 @@ function LevelDots({ level }: { level: string }) {
           key={i}
           className={cn(
             "size-2 rounded-full",
-            i <= value ? "bg-gradient-to-r from-violet-400 to-fuchsia-400" : "bg-white/15"
+            i <= value ? "bg-gradient-to-r from-white to-cyan-100" : "bg-white/25"
           )}
         />
       ))}
@@ -92,21 +193,21 @@ export function WelcomeCard({
   date: string;
 }) {
   return (
-    <CardShell accent="from-violet-600/40 via-fuchsia-600/25 to-transparent">
+    <CardShell theme="welcome">
       <div className="my-auto text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mx-auto size-24 grid place-items-center rounded-3xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 text-5xl shadow-2xl shadow-fuchsia-500/30"
+          className="mx-auto size-24 grid place-items-center rounded-3xl bg-white/15 backdrop-blur-sm text-5xl shadow-2xl shadow-black/30 border border-white/30"
         >
           {aiEmoji}
         </motion.div>
-        <p className="mt-8 text-sm uppercase tracking-[0.3em] text-muted-foreground">AI Wrapped presents</p>
-        <h1 className="mt-3 font-display text-5xl md:text-7xl font-bold tracking-tight text-gradient">
+        <p className="mt-8 text-sm uppercase tracking-[0.3em] text-white/60">AI Wrapped presents</p>
+        <h1 className="mt-3 font-display text-5xl md:text-7xl font-bold tracking-tight text-gradient-bright">
           {username}
         </h1>
-        <p className="mt-4 text-muted-foreground">
+        <p className="mt-4 text-white/70">
           Powered by {aiUsed} · {date}
         </p>
       </div>
@@ -117,13 +218,13 @@ export function WelcomeCard({
 export function PersonalityCard({ analysis }: { analysis: Analysis }) {
   const p = analysis.personality;
   return (
-    <CardShell accent="from-fuchsia-600/35 via-pink-600/20 to-transparent">
+    <CardShell theme="personality">
       <CardLabel>Your Personality</CardLabel>
       <div className="mt-2">
         <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight">
-          The <span className="text-gradient">{p.personalityType}</span>
+          The <span className="text-gradient-bright">{p.personalityType}</span>
         </h2>
-        <p className="mt-2 text-muted-foreground">AI Archetype: {p.aiArchetype}</p>
+        <p className="mt-2 text-white/70">AI Archetype: {p.aiArchetype}</p>
       </div>
       <div className="mt-auto space-y-5 pt-8">
         {[
@@ -132,7 +233,7 @@ export function PersonalityCard({ analysis }: { analysis: Analysis }) {
           ["Creativity", p.creativityLevel],
         ].map(([label, level]) => (
           <div key={label} className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">{label}</span>
+            <span className="text-sm text-white/60">{label}</span>
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">{level}</span>
               <LevelDots level={level} />
@@ -153,10 +254,10 @@ export function ThinkingCard({ analysis }: { analysis: Analysis }) {
     ["Learning Style", p.learningStyle],
   ];
   return (
-    <CardShell accent="from-cyan-500/30 via-sky-600/20 to-transparent">
+    <CardShell theme="thinking">
       <CardLabel>How You Think</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        Your thinking <span className="text-gradient">style</span>
+        Your thinking <span className="text-gradient-bright">style</span>
       </h2>
       <div className="mt-8 grid gap-3">
         {rows.map(([label, value], i) => (
@@ -165,9 +266,9 @@ export function ThinkingCard({ analysis }: { analysis: Analysis }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 + i * 0.1 }}
-            className="glass rounded-2xl p-5"
+            className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm"
           >
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+            <div className="text-xs uppercase tracking-wider text-white/55">{label}</div>
             <div className="mt-1 font-display text-xl font-semibold">{value}</div>
           </motion.div>
         ))}
@@ -179,21 +280,21 @@ export function ThinkingCard({ analysis }: { analysis: Analysis }) {
 export function ScoresCard({ analysis }: { analysis: Analysis }) {
   const { scores } = analysis;
   return (
-    <CardShell accent="from-violet-600/40 via-fuchsia-600/25 to-transparent">
+    <CardShell theme="scores">
       <CardLabel>Your Scores</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        Out of <span className="text-gradient">100</span>
+        Out of <span className="text-gradient-bright">100</span>
       </h2>
       <div className="mt-8 space-y-4">
         {SCORE_KEYS.map((s, i) => (
           <div key={s.key}>
             <div className="flex justify-between text-sm mb-1.5">
-              <span className="text-muted-foreground">{s.label}</span>
+              <span className="text-white/60">{s.label}</span>
               <span className="font-semibold">{scores[s.key]}</span>
             </div>
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+            <div className="h-2 rounded-full bg-white/20 overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                className="h-full rounded-full bg-gradient-to-r from-white to-cyan-200"
                 initial={{ width: 0 }}
                 animate={{ width: `${scores[s.key]}%` }}
                 transition={{ duration: 0.9, delay: 0.1 + i * 0.06, ease: "easeOut" }}
@@ -202,12 +303,12 @@ export function ScoresCard({ analysis }: { analysis: Analysis }) {
           </div>
         ))}
       </div>
-      <div className="mt-6 flex items-end justify-between rounded-2xl bg-gradient-to-r from-violet-600/40 to-fuchsia-600/40 p-5">
+      <div className="mt-6 flex items-end justify-between rounded-2xl border border-white/25 bg-black/30 p-5 backdrop-blur-sm">
         <div>
           <div className="text-xs uppercase tracking-wider text-white/70">Overall Score</div>
           <div className="font-display text-2xl font-bold">AI Power Level</div>
         </div>
-        <div className="font-display text-6xl font-bold text-gradient">{scores.overall}</div>
+        <div className="font-display text-6xl font-bold text-gradient-bright">{scores.overall}</div>
       </div>
     </CardShell>
   );
@@ -216,10 +317,10 @@ export function ScoresCard({ analysis }: { analysis: Analysis }) {
 export function CommunicationCard({ analysis }: { analysis: Analysis }) {
   const l = analysis.language;
   return (
-    <CardShell accent="from-emerald-500/30 via-teal-600/20 to-transparent">
+    <CardShell theme="communication">
       <CardLabel>How You Talk to AI</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        Your voice<span className="text-gradient">print</span>
+        Your voice<span className="text-gradient-bright">print</span>
       </h2>
       <div className="mt-8 grid grid-cols-2 gap-3">
         {[
@@ -237,9 +338,9 @@ export function CommunicationCard({ analysis }: { analysis: Analysis }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + i * 0.06 }}
-            className="glass rounded-2xl p-4"
+            className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
           >
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+            <TileLabel>{label}</TileLabel>
             <div className="mt-1 font-semibold text-base leading-snug">{value}</div>
           </motion.div>
         ))}
@@ -251,13 +352,13 @@ export function CommunicationCard({ analysis }: { analysis: Analysis }) {
 export function InterestsCard({ analysis }: { analysis: Analysis }) {
   const { interests } = analysis;
   return (
-    <CardShell accent="from-amber-500/30 via-orange-600/20 to-transparent">
+    <CardShell theme="interests">
       <CardLabel>Your Interests</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        What you&apos;re <span className="text-gradient">into</span>
+        What you&apos;re <span className="text-gradient-bright">into</span>
       </h2>
       <div className="mt-8">
-        <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Top Topics</div>
+        <div className="text-xs uppercase tracking-wider text-white/55 mb-3">Top Topics</div>
         <div className="flex flex-wrap gap-2">
           {interests.topTopics.map((t, i) => (
             <motion.span
@@ -265,21 +366,21 @@ export function InterestsCard({ analysis }: { analysis: Analysis }) {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 + i * 0.07 }}
-              className="rounded-full border border-white/10 bg-gradient-to-r from-violet-600/25 to-fuchsia-600/25 px-4 py-2 font-semibold"
+              className="rounded-full border border-white/30 bg-white/15 px-4 py-2 font-semibold backdrop-blur-sm"
             >
               {t}
             </motion.span>
           ))}
         </div>
         <div className="mt-8 grid grid-cols-2 gap-3">
-          <div className="glass rounded-2xl p-5">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">Favorite Domain</div>
+          <Tile className="p-5">
+            <TileLabel>Favorite Domain</TileLabel>
             <div className="mt-1 font-display text-xl font-bold">{interests.favoriteDomain}</div>
-          </div>
-          <div className="glass rounded-2xl p-5">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">Most Discussed</div>
+          </Tile>
+          <Tile className="p-5">
+            <TileLabel>Most Discussed</TileLabel>
             <div className="mt-1 font-display text-xl font-bold">{interests.mostDiscussedArea}</div>
-          </div>
+          </Tile>
         </div>
       </div>
     </CardShell>
@@ -288,10 +389,10 @@ export function InterestsCard({ analysis }: { analysis: Analysis }) {
 
 export function StrengthsCard({ analysis }: { analysis: Analysis }) {
   return (
-    <CardShell accent="from-emerald-500/30 via-teal-600/20 to-transparent">
+    <CardShell theme="strengths">
       <CardLabel>Your Strengths</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        What makes you <span className="text-gradient">great</span>
+        What makes you <span className="text-gradient-bright">great</span>
       </h2>
       <div className="mt-8 space-y-3">
         {analysis.strengths.map((s, i) => (
@@ -300,18 +401,21 @@ export function StrengthsCard({ analysis }: { analysis: Analysis }) {
             initial={{ opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.12 + i * 0.08 }}
-            className="flex items-center gap-4 glass rounded-2xl p-4"
+            className="flex items-center gap-4 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
           >
-            <span className="font-display text-2xl font-bold text-white/20">{i + 1}</span>
+            <span className="font-display text-2xl font-bold text-white/30">{i + 1}</span>
             <span className="font-semibold text-lg">{s}</span>
           </motion.div>
         ))}
       </div>
       <div className="mt-8">
-        <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Growth Areas</div>
+        <div className="text-xs uppercase tracking-wider text-white/55 mb-3">Growth Areas</div>
         <div className="flex flex-wrap gap-2">
           {analysis.improvement.map((imp) => (
-            <Badge key={imp} variant="secondary" className="px-3 py-1.5">
+            <Badge
+              key={imp}
+              className="border-white/25 bg-white/15 text-white px-3 py-1.5"
+            >
               {imp}
             </Badge>
           ))}
@@ -331,10 +435,10 @@ export function FunFactsCard({ analysis }: { analysis: Analysis }) {
     ["Funniest Insight", f.funniestInsight, "😄"],
   ];
   return (
-    <CardShell accent="from-fuchsia-600/35 via-pink-600/20 to-transparent">
+    <CardShell theme="fun">
       <CardLabel>Fun Facts</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        The <span className="text-gradient">fun</span> stuff
+        The <span className="text-gradient-bright">fun</span> stuff
       </h2>
       <div className="mt-8 space-y-3">
         {rows.map(([label, value, emoji], i) => (
@@ -343,11 +447,11 @@ export function FunFactsCard({ analysis }: { analysis: Analysis }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 + i * 0.08 }}
-            className="glass rounded-2xl p-4 flex gap-4"
+            className="flex gap-4 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
           >
             <span className="text-2xl">{emoji}</span>
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+              <TileLabel>{label}</TileLabel>
               <div className="mt-0.5 font-medium leading-snug">{value}</div>
             </div>
           </motion.div>
@@ -359,10 +463,10 @@ export function FunFactsCard({ analysis }: { analysis: Analysis }) {
 
 export function AchievementsCard({ analysis }: { analysis: Analysis }) {
   return (
-    <CardShell accent="from-amber-500/30 via-orange-600/20 to-transparent">
+    <CardShell theme="achievements">
       <CardLabel>Achievements Unlocked</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        Your <span className="text-gradient">badges</span>
+        Your <span className="text-gradient-bright">badges</span>
       </h2>
       <div className="mt-8 grid grid-cols-2 gap-3">
         {analysis.achievements.map((a, i) => (
@@ -371,7 +475,7 @@ export function AchievementsCard({ analysis }: { analysis: Analysis }) {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 + i * 0.07 }}
-            className="rounded-2xl border border-amber-300/20 bg-gradient-to-br from-amber-500/15 to-orange-600/10 p-5 text-center"
+            className="rounded-2xl border border-white/30 bg-white/10 p-5 text-center backdrop-blur-sm"
           >
             <div className="text-3xl">🏅</div>
             <div className="mt-2 font-semibold text-sm leading-tight">{a}</div>
@@ -386,10 +490,10 @@ export function CareerCard({ analysis }: { analysis: Analysis }) {
   const c = analysis.career;
   const p = analysis.productivity;
   return (
-    <CardShell accent="from-cyan-500/30 via-sky-600/20 to-transparent">
+    <CardShell theme="career">
       <CardLabel>Career Match</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        Built for <span className="text-gradient">this</span>
+        Built for <span className="text-gradient-bright">this</span>
       </h2>
       <div className="mt-8 space-y-3">
         {[
@@ -402,7 +506,7 @@ export function CareerCard({ analysis }: { analysis: Analysis }) {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.12 + i * 0.08 }}
-            className="flex items-center gap-4 glass rounded-2xl p-4"
+            className="flex items-center gap-4 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
           >
             <span className="text-2xl">{medal}</span>
             <span className="font-display text-lg font-bold">{career}</span>
@@ -410,14 +514,14 @@ export function CareerCard({ analysis }: { analysis: Analysis }) {
         ))}
       </div>
       <div className="mt-8 grid grid-cols-2 gap-3">
-        <div className="glass rounded-2xl p-4">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Hours Saved</div>
+        <Tile className="p-4">
+          <TileLabel>Hours Saved</TileLabel>
           <div className="mt-1 font-display text-lg font-bold">{p.estimatedHoursSaved}</div>
-        </div>
-        <div className="glass rounded-2xl p-4">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Most Common Use</div>
+        </Tile>
+        <Tile className="p-4">
+          <TileLabel>Most Common Use</TileLabel>
           <div className="mt-1 font-display text-lg font-bold leading-tight">{p.mostCommonUse}</div>
-        </div>
+        </Tile>
       </div>
     </CardShell>
   );
@@ -433,10 +537,10 @@ export function PredictionsCard({ analysis }: { analysis: Analysis }) {
     ["Learning Path", pr.learningRecommendation, "🧭"],
   ];
   return (
-    <CardShell accent="from-violet-600/35 via-fuchsia-600/20 to-transparent">
+    <CardShell theme="predictions">
       <CardLabel>Looking Ahead</CardLabel>
       <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-        Your <span className="text-gradient">future</span>
+        Your <span className="text-gradient-bright">future</span>
       </h2>
       <div className="mt-8 space-y-3">
         {rows.map(([label, value, emoji], i) => (
@@ -445,11 +549,11 @@ export function PredictionsCard({ analysis }: { analysis: Analysis }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 + i * 0.08 }}
-            className="glass rounded-2xl p-4 flex gap-4"
+            className="flex gap-4 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
           >
             <span className="text-2xl">{emoji}</span>
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+              <TileLabel>{label}</TileLabel>
               <div className="mt-0.5 font-medium leading-snug">{value}</div>
             </div>
           </motion.div>

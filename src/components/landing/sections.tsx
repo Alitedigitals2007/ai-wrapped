@@ -51,7 +51,7 @@ export function Features() {
         <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
             <Reveal key={f.title} delay={i * 0.06}>
-              <div className="glass rounded-3xl p-7 h-full hover:bg-white/[0.07] transition-colors group">
+              <div className="glass rounded-3xl p-7 h-full hover:bg-black/5 dark:hover:bg-white/[0.07] transition-colors group">
                 <div className="size-12 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30 text-2xl group-hover:scale-110 transition-transform">
                   {f.emoji}
                 </div>
@@ -73,7 +73,7 @@ export function CTA() {
         <div className="relative overflow-hidden rounded-[2.5rem] glass px-8 py-16 text-center">
           <div
             aria-hidden
-            className="absolute -top-24 left-1/2 -translate-x-1/2 size-72 rounded-full bg-fuchsia-600/30 blur-[100px]"
+            className="absolute -top-24 left-1/2 -translate-x-1/2 size-72 rounded-full bg-fuchsia-400/40 dark:bg-fuchsia-600/30 blur-[100px]"
           />
           <h2 className="relative font-display text-3xl md:text-5xl font-bold tracking-tight">
             Ready to see yourself <span className="text-gradient">through AI&apos;s eyes?</span>
@@ -108,10 +108,6 @@ export function FAQ() {
       a: "ChatGPT, Gemini, Claude, Grok, DeepSeek, Perplexity, Microsoft Copilot, Meta AI, Qwen, Kimi, Mistral AI — and an Other option for anything else.",
     },
     {
-      q: "Is my conversation private?",
-      a: "Yes. We only see the response you paste, and we never share or sell your data. The pasted text is used once to build your Wrapped.",
-    },
-    {
       q: "Can I download or share my Wrapped?",
       a: "Absolutely. The final card downloads as a PNG image, and you can share it on any social platform with one tap.",
     },
@@ -132,7 +128,7 @@ export function FAQ() {
           {faqs.map((f) => (
             <details
               key={f.q}
-              className="glass rounded-2xl px-6 py-4 group open:bg-white/[0.06] transition-colors"
+              className="glass rounded-2xl px-6 py-4 group open:bg-black/5 dark:open:bg-white/[0.06] transition-colors"
             >
               <summary className="flex items-center justify-between font-medium cursor-pointer list-none">
                 {f.q}
@@ -149,7 +145,7 @@ export function FAQ() {
 
 export function Footer() {
   return (
-    <footer className="px-4 py-10 border-t border-white/5">
+    <footer className="px-4 py-10 border-t border-black/5 dark:border-white/5">
       <div className="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2 font-display font-bold text-foreground">
           <span className="grid place-items-center size-7 rounded-full bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 text-white text-sm">
@@ -158,10 +154,23 @@ export function Footer() {
           AI Wrapped
         </div>
         <p>Discover how AI sees you. © {new Date().getFullYear()}</p>
-        <div className="flex gap-5">
+        <div className="flex gap-5 items-center">
           <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
           <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
           <Link href="/admin/login" className="hover:text-foreground transition-colors">Admin</Link>
+          <span className="text-muted-foreground/50">·</span>
+          <span className="inline-flex items-center gap-1.5">
+            Built by <span className="font-semibold text-foreground">Alite</span>
+            <a
+              href="https://wa.me/2349154681851?text=Well%20done%20on%20AI%20Wrapped%2C%20Alite!"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
+              aria-label="Message Alite on WhatsApp"
+            >
+              💬
+            </a>
+          </span>
         </div>
       </div>
     </footer>

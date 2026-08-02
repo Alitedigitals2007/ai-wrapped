@@ -48,6 +48,7 @@ export default async function WrappedPage({
   return (
     <WrappedViewer
       id={submission.id}
+      code={submission.code ?? null}
       username={submission.username}
       aiUsed={submission.aiUsed}
       aiEmoji={AI_EMOJI[submission.aiUsed] ?? "🤖"}

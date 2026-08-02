@@ -11,9 +11,10 @@ shows every submission.
 ## Features
 
 - **Landing page** — hero, how it works, features, FAQ, footer (SEO-friendly, light + dark, animated)
-- **5-step Generate flow** — username → pick AI → copy engineered prompt → paste AI's response → animated "Building your Wrapped…" loading
+- **5-step Generate flow** — username → pick AI → confirm popup → copy engineered prompt → paste AI's response → animated "Building your Wrapped…" loading
 - **12-card Wrapped viewer** — swipe on mobile, buttons + keyboard on desktop, each card can be downloaded or shared individually with captions
 - **Share card** — Download PNG (html-to-image), native Share / copy link, Generate Again
+- **Compare by code** — every Wrapped gets a unique 6-character code on its share card; enter two codes on `/compare` to battle two Wraps head-to-head (scores + key cards side by side)
 - **Analysis engine** — structured JSON with personality, 8 scores, language habits, interests, productivity, career matches, strengths, fun facts, achievements, predictions
   - Primary: **Groq** (OpenAI-compatible API, free tier, `https://api.groq.com/openai/v1`)
   - Fallback: built-in deterministic analyzer — works with **zero API keys**
@@ -72,9 +73,16 @@ Open http://localhost:3000. Admin dashboard: http://localhost:3000/admin/login (
 ## Deploying to Vercel
 
 1. Push this repo to GitHub and import it in Vercel.
-2. Add the same environment variables from `.env` (including a Neon `DATABASE_URL`).
+2. In Vercel → Project → Settings → Environment Variables, add **Production** (and Preview if wanted) values for:
+   - `DATABASE_URL` — your Neon connection string (add `&pgbouncer=true` for serverless)
+   - `GROQ_API_KEY` — **required for real AI analysis** (get one free at https://console.groq.com/keys)
+   - `GROQ_MODEL` — default `llama-3.3-70b-versatile`
+   - `ADMIN_PASSWORD` — admin dashboard password
+   - `SESSION_SECRET` — long random string
+   - `NEXT_PUBLIC_APP_URL` — your Vercel app URL, e.g. `https://ai-wrapped.vercel.app`
 3. `npm install` on Vercel runs `prisma generate` automatically (`postinstall`).
 4. After first deploy, run `npm run db:push` locally (or `prisma migrate deploy` via a build step) to create tables.
+5. **Important:** never copy your real values into `.env.example` — that file is committed and must only contain placeholders.
 
 > Note: the first page-load is optimized for <3s; the Wrapped page is
 > server-rendered on demand and cards animate client-side.

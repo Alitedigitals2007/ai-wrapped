@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toPng, toBlob } from "html-to-image";
 import { toast } from "sonner";
 import type { Analysis } from "@/lib/analysis/types";
@@ -23,11 +24,28 @@ import {
 } from "./cards";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Share2,
+  RefreshCw,
+  Swords,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ViewerProps {
   id: string;
+  code?: string | null;
   username: string;
   aiUsed: string;
   aiEmoji: string;
@@ -73,10 +91,12 @@ function ShareCardView({
   username,
   aiUsed,
   analysis,
+  code,
 }: {
   username: string;
   aiUsed: string;
   analysis: Analysis;
+  code?: string | null;
 }) {
   const a = analysis;
   return (
@@ -90,7 +110,14 @@ function ShareCardView({
           {AI_EMOJI[aiUsed] ?? "🤖"} {aiUsed}
         </p>
 
-        <div className="mt-8 grid grid-cols-2 gap-3 text-left">
+        {code && (
+          <div className="mt-5 inline-flex items-center gap-3 rounded-full border border-white/30 bg-white/15 px-5 py-2.5 backdrop-blur-sm">
+            <span className="text-white/60">CODE: </span>
+            <span className="font-display text-xl font-bold tracking-[0.2em]">{code}</span>
+          </div>
+        )}
+
+        <div className="mt-6 grid grid-cols-2 gap-3 text-left">
           {[
             ["AI Personality", a.personality.personalityType],
             ["Top Strength", a.strengths[0] ?? "—"],
@@ -135,9 +162,12 @@ function ShareCardView({
 }
 
 export default function WrappedViewer(props: ViewerProps) {
-  const { id, username, aiUsed, aiEmoji, analysis } = props;
+  const { id, code, username, aiUsed, aiEmoji, analysis } = props;
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const [busy, setBusy] = useState<"download" | "share" | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [friendCode, setFriendCode] = useState("");
   const cardRef = useRef<HTMLDivElement>(null);
   const total = 12;
 
@@ -254,6 +284,23 @@ export default function WrappedViewer(props: ViewerProps) {
     }
   };
 
+  const startCompare = async () => {
+    const fc = friendCode.trim().toUpperCase();
+    if (fc.length < 4) return;
+    try {
+      const res = await fetch(`/api/lookup?code=${encodeURIComponent(fc)}`);
+      if (res.status === 404) {
+        toast.error(`No wrap found with code "${fc}". Double-check it.`);
+        return;
+      }
+      if (!res.ok) throw new Error("lookup failed");
+      setCompareOpen(false);
+      router.push(`/compare?me=${encodeURIComponent(code ?? "")}&them=${encodeURIComponent(fc)}`);
+    } catch {
+      toast.error("Couldn't reach the compare service.");
+    }
+  };
+
   const cards = [
     <WelcomeCard key="w" username={username} aiUsed={aiUsed} aiEmoji={aiEmoji} date={new Date().getFullYear().toString()} />,
     <PersonalityCard key="p" analysis={analysis} />,
@@ -266,7 +313,7 @@ export default function WrappedViewer(props: ViewerProps) {
     <AchievementsCard key="a" analysis={analysis} />,
     <CareerCard key="ca" analysis={analysis} />,
     <PredictionsCard key="pr" analysis={analysis} />,
-    <ShareCardView key="share" username={username} aiUsed={aiUsed} analysis={analysis} />,
+    <ShareCardView key="share" username={username} aiUsed={aiUsed} analysis={analysis} code={code} />,
   ];
 
   return (
@@ -344,6 +391,9 @@ export default function WrappedViewer(props: ViewerProps) {
                     <Button size="sm" variant="outline" onClick={shareLink}>
                       <Share2 className="mr-1.5 size-4" /> Share
                     </Button>
+                    <Button size="sm" variant="outline" onClick={() => setCompareOpen(true)} disabled={!code}>
+                      <Swords className="mr-1.5 size-4" /> Compare
+                    </Button>
                     <Button size="sm" variant="ghost" render={<Link href="/generate" />}>
                       <RefreshCw className="mr-1.5 size-4" /> Generate Again
                     </Button>
@@ -388,6 +438,40 @@ export default function WrappedViewer(props: ViewerProps) {
           </div>
         </div>
       </div>
+
+      <Dialog open={compareOpen} onOpenChange={setCompareOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Compare with a friend 🥊</DialogTitle>
+            <DialogDescription>
+              Ask your friend for their AI Wrapped code and paste it below. Your code:{" "}
+              <span className="inline-flex items-center gap-1 font-mono font-bold text-foreground">
+                {code ?? "—"}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={friendCode}
+            onChange={(e) => setFriendCode(e.target.value.toUpperCase())}
+            placeholder="e.g. KC7F2M"
+            maxLength={6}
+            className="h-12 text-center font-mono text-lg uppercase tracking-[0.3em]"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && friendCode.length >= 4) startCompare();
+            }}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCompareOpen(false)}>Cancel</Button>
+            <Button
+              disabled={friendCode.trim().length < 4}
+              onClick={() => startCompare()}
+              className="bg-gradient-to-r from-violet-600 to-fuchsia-600"
+            >
+              <Swords className="mr-1.5 size-4" /> Compare
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

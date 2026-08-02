@@ -5,6 +5,9 @@ import { analyzeResponse } from "@/lib/analysis/analyze";
 import { buildSummary } from "@/lib/analysis/types";
 import { ENGINEERED_PROMPT } from "@/lib/analysis/prompt";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/session";
+import { generateCode } from "@/lib/code";
+
+export const maxDuration = 60;
 
 const AI_VALUES = [
   "ChatGPT", "Gemini", "Claude", "Grok", "DeepSeek", "Perplexity",
@@ -128,6 +131,7 @@ export async function POST(request: NextRequest) {
           response,
           analysisJson: analysis as unknown as object,
           wrappedJson: wrapped as unknown as object,
+          code: generateCode(),
         },
       });
     } catch (dbError) {
@@ -141,6 +145,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       id: submission.id,
       url: `/wrapped/${submission.id}`,
+      code: submission.code,
       engine,
     });
   } catch (error) {

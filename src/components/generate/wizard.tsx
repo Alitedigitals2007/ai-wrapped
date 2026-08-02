@@ -12,6 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, ArrowLeft, ArrowRight, Copy, Check, RefreshCw } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const LOADING_MESSAGES = [
@@ -100,7 +108,9 @@ function StepUsername() {
 }
 
 function StepAI() {
-  const { aiUsed, setAiUsed, setStep } = useWizard();
+  const { username, aiUsed, setAiUsed, setStep } = useWizard();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const selected = AI_OPTIONS.find((ai) => ai.value === aiUsed);
   return (
     <StepShell
       step={2}
@@ -131,12 +141,45 @@ function StepAI() {
         </Button>
         <Button
           disabled={!aiUsed}
-          onClick={() => setStep(2)}
+          onClick={() => setConfirmOpen(true)}
           className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
         >
           Continue <ArrowRight className="ml-2 size-4" />
         </Button>
       </div>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-2xl">{selected?.emoji ?? "🤖"}</span>
+              Confirm your choice
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-2">
+<p>
+                <span className="font-semibold text-foreground">{username}</span>, we&apos;ll analyze{" "}
+                <span className="font-semibold text-foreground">{aiUsed}</span>
+                &apos;s profile of you.
+              </p>
+              <p className="text-sm">Is {aiUsed} the AI you want to use?</p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Go back
+            </Button>
+            <Button
+              onClick={() => {
+                setConfirmOpen(false);
+                setStep(2);
+              }}
+              className="bg-gradient-to-r from-violet-600 to-fuchsia-600"
+            >
+              Yes, it&apos;s {aiUsed} — Confirm <ArrowRight className="ml-1.5 size-4" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </StepShell>
   );
 }

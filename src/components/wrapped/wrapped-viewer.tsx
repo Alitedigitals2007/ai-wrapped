@@ -169,6 +169,7 @@ export default function WrappedViewer(props: ViewerProps) {
   const [compareOpen, setCompareOpen] = useState(false);
   const [friendCode, setFriendCode] = useState("");
   const cardRef = useRef<HTMLDivElement>(null);
+  const tapDownRef = useRef<{ x: number; y: number } | null>(null);
   const total = 12;
 
   const captions = useMemo(() => {
@@ -190,6 +191,23 @@ export default function WrappedViewer(props: ViewerProps) {
 
   const next = useCallback(() => setIndex((i) => Math.min(i + 1, total - 1)), [total]);
   const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
+
+  const handleTapStart = (e: React.PointerEvent) => {
+    tapDownRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleCardTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!tapDownRef.current) return;
+    const dx = Math.abs(e.clientX - tapDownRef.current.x);
+    const dy = Math.abs(e.clientY - tapDownRef.current.y);
+    tapDownRef.current = null;
+    if (dx > 12 || dy > 12) return;
+    if ((e.target as HTMLElement).closest("a, button, input, textarea")) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    if (x < rect.width * 0.32) prev();
+    else if (x > rect.width * 0.68) next();
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -363,9 +381,11 @@ export default function WrappedViewer(props: ViewerProps) {
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.6}
               onDragEnd={(_, info) => {
-                if (info.offset.x < -80) next();
-                else if (info.offset.x > 80) prev();
+                if (info.offset.x < -60) next();
+                else if (info.offset.x > 60) prev();
               }}
+              onPointerDown={handleTapStart}
+              onClick={handleCardTap}
               className="h-full cursor-grab active:cursor-grabbing touch-pan-y"
             >
               <div ref={cardRef} className="h-full">
@@ -373,6 +393,11 @@ export default function WrappedViewer(props: ViewerProps) {
               </div>
             </motion.div>
           </AnimatePresence>
+          {index === 0 && (
+            <div className="pointer-events-none absolute -bottom-8 inset-x-0 text-center text-xs text-muted-foreground/80 md:hidden animate-pulse">
+              Swipe or tap the edges to browse →
+            </div>
+          )}
         </div>
 
         <div className="fixed bottom-0 inset-x-0 z-40">

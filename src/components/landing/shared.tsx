@@ -1,6 +1,10 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ReactNode } from "react";
+import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function Reveal({
@@ -26,31 +30,82 @@ export function Reveal({
 }
 
 export function Navbar() {
+  const [open, setOpen] = useState(false);
+  const links = [
+    { href: "#how", label: "How it works" },
+    { href: "#features", label: "Features" },
+    { href: "#faq", label: "FAQ" },
+    { href: "/compare", label: "Compare" },
+  ];
   return (
     <header className="fixed top-0 inset-x-0 z-50">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="mt-4 glass rounded-full px-5 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight">
+        <div className="mt-4 glass rounded-full px-5 py-3 flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight shrink-0">
             <span className="grid place-items-center size-8 rounded-full bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 text-white text-base">
               🪄
             </span>
             AI Wrapped
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
-            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+            {links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className="hover:text-foreground transition-colors"
+              >
+                {l.label}
+              </a>
+            ))}
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <ThemeToggle />
             <Link
               href="/generate"
-              className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-sm font-semibold px-4 py-2 transition-all hover:shadow-lg hover:shadow-fuchsia-500/25"
+              className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-sm font-semibold px-4 py-2 transition-all hover:shadow-lg hover:shadow-fuchsia-500/25"
             >
               Generate My Wrapped
             </Link>
+            <button
+              onClick={() => setOpen((o) => !o)}
+              aria-label="Toggle menu"
+              aria-expanded={open}
+              className="md:hidden grid place-items-center size-9 rounded-full border border-border/60 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {open ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
           </div>
         </div>
+        <AnimatePresence>
+          {open && (
+            <motion.nav
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="md:hidden mt-2 glass rounded-3xl p-3 flex flex-col gap-1 text-muted-foreground"
+            >
+              {links.map((l) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-2xl px-4 py-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
+              <Link
+                href="/generate"
+                onClick={() => setOpen(false)}
+                className="mt-1 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-center text-sm font-semibold px-4 py-3 hover:from-violet-500 hover:to-fuchsia-500 transition-colors"
+              >
+                Generate My Wrapped ✨
+              </Link>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );

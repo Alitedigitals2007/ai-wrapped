@@ -65,8 +65,8 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.2 }}
         >
           {APP_NAME} is a playground of fun: a scenario-based personality test, a
-          &quot;Who knows me best?&quot; quiz for you and your friends, and the classic
-          AI Wrapped story. All free, no account needed.
+          &quot;Who knows me best?&quot; quiz for you and your friends, a question a day to
+          reflect on, and the classic AI Wrapped story. All free, no account needed.
         </motion.p>
 
         <motion.div
@@ -143,6 +143,16 @@ export function Choose() {
       grad: "bg-gradient-to-br from-sky-600 via-blue-600 to-cyan-600",
       time: "~30 sec",
     },
+    {
+      href: "/daily",
+      emoji: "🌅",
+      title: "Daily Question",
+      tag: "Ritual",
+      text: "One new question every day. Answer it, get an instant read, and build a habit of checking in with yourself.",
+      cta: "Answer today's ✨",
+      grad: "bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500",
+      time: "~10 sec",
+    },
   ];
   return (
     <section id="choose" className="px-4 py-24 scroll-mt-24">
@@ -152,10 +162,10 @@ export function Choose() {
             What do you want to <span className="text-gradient">try?</span>
           </h2>
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-            Three ways to have fun — pick one, or do them all.
+            Four ways to have fun — pick one, or do them all.
           </p>
         </Reveal>
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {options.map((o, i) => (
             <Reveal key={o.title} delay={i * 0.1}>
               <Link

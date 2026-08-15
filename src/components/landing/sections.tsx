@@ -35,6 +35,11 @@ const features = [
     title: "Head-to-head compare",
     text: "Battle two reports (or two AI wraps) by code and see whose personality wins on the scoreboard.",
   },
+  {
+    emoji: "🌅",
+    title: "A question a day",
+    text: "A new scenario every day. Pick your move, get an instant read, and keep a tiny ritual of self-reflection.",
+  },
 ];
 
 export function Features() {
@@ -80,8 +85,9 @@ export function CTA() {
             Ready to meet <span className="text-gradient">yourself?</span>
           </h2>
           <p className="relative mt-4 text-muted-foreground max-w-md mx-auto">
-            Take the personality test, make a &quot;Who knows me best?&quot; quiz, or wrap
-            your AI chats. No account. No email. Just fun and a report worth sharing.
+            Take the personality test, make a &quot;Who knows me best?&quot; quiz, answer
+            today&apos;s daily question, or wrap your AI chats. No account. No email. Just
+            fun and a report worth sharing.
           </p>
           <div className="relative mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

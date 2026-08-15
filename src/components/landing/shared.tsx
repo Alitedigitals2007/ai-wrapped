@@ -34,6 +34,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const links = [
     { href: "/quiz", label: "Play a quiz" },
+    { href: "/daily", label: "Daily question" },
     { href: "/compare", label: "Compare" },
     { href: "#how", label: "How it works" },
     { href: "#features", label: "Features" },

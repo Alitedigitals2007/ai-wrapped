@@ -95,7 +95,7 @@ export default function PersonalityTestClient() {
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-28 pb-20 overflow-hidden">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/20 blur-[120px]" />
+        <div className="absolute -top-32 right-0 size-96 rounded-full bg-teal-400/30 dark:bg-teal-600/20 blur-[120px]" />
         <div className="absolute bottom-0 -left-32 size-96 rounded-full bg-cyan-400/25 dark:bg-cyan-500/10 blur-[120px]" />
       </div>
 
@@ -114,7 +114,7 @@ export default function PersonalityTestClient() {
               transition={{ duration: 0.35 }}
             >
               <div className="text-center mb-10">
-                <div className="mx-auto size-20 grid place-items-center rounded-3xl bg-gradient-to-br from-violet-600 via-fuchsia-600 to-cyan-500 text-4xl text-white shadow-2xl shadow-fuchsia-500/30">
+                <div className="mx-auto size-20 grid place-items-center rounded-3xl bg-gradient-to-br from-teal-600 via-emerald-600 to-cyan-500 text-4xl text-white shadow-2xl shadow-emerald-500/30">
                   🧠
                 </div>
                 <h1 className="mt-6 font-display text-4xl md:text-5xl font-bold tracking-tight">
@@ -122,7 +122,7 @@ export default function PersonalityTestClient() {
                 </h1>
                 <p className="mt-4 text-muted-foreground max-w-md mx-auto">
                   Answer {MCQ_COUNT} short scenario questions plus a few about yourself. No right or
-                  wrong answers — just be honest. It takes about 4 minutes.
+                  wrong answers — just be honest. It takes about 3 minutes.
                 </p>
               </div>
 
@@ -158,7 +158,7 @@ export default function PersonalityTestClient() {
 
                 <Button
                   onClick={startQuiz}
-                  className="mt-6 w-full h-12 text-base font-semibold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-cyan-400"
+                  className="mt-6 w-full h-12 text-base font-semibold bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-500 hover:from-teal-500 hover:via-emerald-500 hover:to-cyan-400"
                 >
                   Start the test <ArrowRight className="ml-2 size-4" />
                 </Button>
@@ -183,7 +183,7 @@ export default function PersonalityTestClient() {
                 </div>
                 <div className="h-1.5 rounded-full bg-black/10 overflow-hidden dark:bg-white/10">
                   <motion.div
-                    className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500"
+                    className="h-full rounded-full bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500"
                     animate={{ width: `${(index / mcqs.length) * 100}%` }}
                     transition={{ duration: 0.3 }}
                   />
@@ -205,10 +205,10 @@ export default function PersonalityTestClient() {
                     className={cn(
                       "w-full text-left glass rounded-2xl p-4 flex items-center gap-4 transition-all hover:bg-black/5 dark:hover:bg-white/[0.08]",
                       answerForCurrent === opt.key &&
-                        "border-fuchsia-400/70 bg-fuchsia-500/15 ring-2 ring-fuchsia-400/40"
+                        "border-teal-400/70 bg-teal-500/15 ring-2 ring-teal-400/40"
                     )}
                   >
-                    <span className="size-9 shrink-0 grid place-items-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white font-bold text-sm">
+                    <span className="size-9 shrink-0 grid place-items-center rounded-full bg-gradient-to-br from-teal-600 to-emerald-600 text-white font-bold text-sm">
                       {opt.emoji}
                     </span>
                     <span className="font-medium text-sm md:text-base leading-snug">{opt.label}</span>
@@ -278,7 +278,7 @@ export default function PersonalityTestClient() {
                 <Button
                   onClick={submit}
                   disabled={submitting}
-                  className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-cyan-400"
+                  className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-500 hover:from-teal-500 hover:via-emerald-500 hover:to-cyan-400"
                 >
                   <Sparkles className="mr-2 size-4" /> Build my personality report
                 </Button>
@@ -296,7 +296,7 @@ export default function PersonalityTestClient() {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="mx-auto size-24 rounded-full border-4 border-black/10 dark:border-white/10 border-t-fuchsia-500 border-r-violet-500 border-b-cyan-500"
+                className="mx-auto size-24 rounded-full border-4 border-black/10 dark:border-white/10 border-t-emerald-500 border-r-teal-500 border-b-cyan-500"
               />
               <AnimatePresence mode="wait">
                 <motion.p

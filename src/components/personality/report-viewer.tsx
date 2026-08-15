@@ -492,8 +492,8 @@ export default function ReportViewer({ code, name, report, engine }: Props) {
   return (
     <main className="relative flex-1 min-h-screen flex flex-col overflow-hidden">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 size-[30rem] rounded-full bg-violet-400/30 dark:bg-violet-600/20 blur-[130px] animate-float-slow" />
-        <div className="absolute bottom-0 right-0 size-[26rem] rounded-full bg-fuchsia-400/25 dark:bg-fuchsia-600/20 blur-[130px] animate-float-slower" />
+        <div className="absolute top-0 left-1/4 size-[30rem] rounded-full bg-teal-400/30 dark:bg-teal-600/20 blur-[130px] animate-float-slow" />
+        <div className="absolute bottom-0 right-0 size-[26rem] rounded-full bg-emerald-400/25 dark:bg-emerald-600/20 blur-[130px] animate-float-slower" />
       </div>
 
       <header className="fixed top-0 inset-x-0 z-40 px-4 pt-4">
@@ -510,7 +510,7 @@ export default function ReportViewer({ code, name, report, engine }: Props) {
                 className={cn(
                   "h-1.5 rounded-full transition-all",
                   i === index
-                    ? "w-6 bg-gradient-to-r from-violet-500 to-fuchsia-500 dark:from-violet-400 dark:to-fuchsia-400"
+                    ? "w-6 bg-gradient-to-r from-teal-500 to-emerald-500 dark:from-teal-400 dark:to-emerald-400"
                     : "w-2 bg-black/15 dark:bg-white/15 hover:bg-black/30 dark:hover:bg-white/30"
                 )}
               />
@@ -566,7 +566,7 @@ export default function ReportViewer({ code, name, report, engine }: Props) {
               <div className="flex-1 text-center min-w-0">
                 {index === total - 1 ? (
                   <div className="flex items-center justify-center gap-2 flex-wrap">
-                    <Button size="sm" onClick={downloadPng} disabled={busy !== null} className="bg-gradient-to-r from-violet-600 to-fuchsia-600">
+                    <Button size="sm" onClick={downloadPng} disabled={busy !== null} className="bg-gradient-to-r from-teal-600 to-emerald-600">
                       <Download className="mr-1.5 size-4" />
                       {busy === "download" ? "Rendering..." : "Download PNG"}
                     </Button>
@@ -647,7 +647,7 @@ export default function ReportViewer({ code, name, report, engine }: Props) {
             <Button
               disabled={friendCode.trim().length < 4}
               onClick={() => startCompare()}
-              className="bg-gradient-to-r from-violet-600 to-fuchsia-600"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600"
             >
               <Swords className="mr-1.5 size-4" /> Compare
             </Button>

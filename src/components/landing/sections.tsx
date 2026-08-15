@@ -6,14 +6,14 @@ import { APP_NAME } from "@/lib/brand";
 
 const features = [
   {
-    emoji: "🧬",
+    emoji: "🧠",
     title: "15 personality dimensions",
     text: "Extraversion, openness, risk tolerance, empathy, ambition and more — each measured 0–100 from your scenario choices.",
   },
   {
-    emoji: "🎯",
-    title: "Scenario-based, not labels",
-    text: "No boring 'Are you an introvert?' questions. Real situations and decisions reveal how you actually think.",
+    emoji: "👀",
+    title: "Who knows me best?",
+    text: "Write your own questions about you, share the code, and let friends battle to the top of your leaderboard.",
   },
   {
     emoji: "✨",
@@ -22,8 +22,8 @@ const features = [
   },
   {
     emoji: "🔗",
-    title: "Shareable report link",
-    text: "Every report gets a public URL and a 6-character code. Send it to anyone — they can open it, no account needed.",
+    title: "Shareable links",
+    text: "Every report and quiz gets a public URL and a 6-character code. Send it to anyone — no account needed.",
   },
   {
     emoji: "📸",
@@ -53,7 +53,7 @@ export function Features() {
           {features.map((f, i) => (
             <Reveal key={f.title} delay={i * 0.06}>
               <div className="glass rounded-3xl p-7 h-full hover:bg-black/5 dark:hover:bg-white/[0.07] transition-colors group">
-                <div className="size-12 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30 text-2xl group-hover:scale-110 transition-transform">
+                <div className="size-12 grid place-items-center rounded-2xl bg-gradient-to-br from-teal-600/30 to-emerald-600/30 text-2xl group-hover:scale-110 transition-transform">
                   {f.emoji}
                 </div>
                 <h3 className="mt-5 font-semibold text-lg">{f.title}</h3>
@@ -74,21 +74,35 @@ export function CTA() {
         <div className="relative overflow-hidden rounded-[2.5rem] glass px-8 py-16 text-center">
           <div
             aria-hidden
-            className="absolute -top-24 left-1/2 -translate-x-1/2 size-72 rounded-full bg-fuchsia-400/40 dark:bg-fuchsia-600/30 blur-[100px]"
+            className="absolute -top-24 left-1/2 -translate-x-1/2 size-72 rounded-full bg-emerald-400/40 dark:bg-emerald-600/30 blur-[100px]"
           />
           <h2 className="relative font-display text-3xl md:text-5xl font-bold tracking-tight">
             Ready to meet <span className="text-gradient">yourself?</span>
           </h2>
           <p className="relative mt-4 text-muted-foreground max-w-md mx-auto">
-            Takes under 4 minutes. No account. No email. Just honest answers and
-            a report worth sharing.
+            Take the personality test, make a &quot;Who knows me best?&quot; quiz, or wrap
+            your AI chats. No account. No email. Just fun and a report worth sharing.
           </p>
-          <a
-            href="/personality"
-            className="relative mt-8 inline-block rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
-          >
-            Test my personality ✨
-          </a>
+          <div className="relative mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/personality"
+              className="inline-block rounded-full bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
+            >
+              Test my personality ✨
+            </Link>
+            <Link
+              href="/quiz"
+              className="inline-block rounded-full bg-gradient-to-r from-amber-500 to-rose-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
+            >
+              Make a quiz 👀
+            </Link>
+            <Link
+              href="/generate"
+              className="inline-block rounded-full bg-gradient-to-r from-sky-600 to-cyan-600 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
+            >
+              Generate an AI Wrap 🤖
+            </Link>
+          </div>
         </div>
       </Reveal>
     </section>
@@ -150,7 +164,7 @@ export function Footer() {
     <footer className="px-4 py-10 border-t border-black/5 dark:border-white/5">
       <div className="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2 font-display font-bold text-foreground">
-          <span className="grid place-items-center size-7 rounded-full bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 text-white text-sm">
+          <span className="grid place-items-center size-7 rounded-full bg-gradient-to-br from-teal-500 via-emerald-500 to-cyan-400 text-white text-sm">
             🧠
           </span>
           {APP_NAME}

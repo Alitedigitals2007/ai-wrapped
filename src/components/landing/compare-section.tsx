@@ -29,7 +29,7 @@ export function CompareSection() {
         <div className="relative overflow-hidden rounded-[2.5rem] glass px-6 py-14 md:px-12 text-center">
           <div
             aria-hidden
-            className="absolute -top-24 right-1/4 size-72 rounded-full bg-violet-400/40 dark:bg-violet-600/25 blur-[100px]"
+            className="absolute -top-24 right-1/4 size-72 rounded-full bg-teal-400/40 dark:bg-teal-600/25 blur-[100px]"
           />
           <h2 className="relative font-display text-3xl md:text-5xl font-bold tracking-tight">
             Battle two <span className="text-gradient">Wraps</span> 🥊
@@ -57,7 +57,7 @@ export function CompareSection() {
             />
             <Button
               onClick={battle}
-              className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500"
+              className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-500"
             >
               <Swords className="mr-1.5 size-5" /> Battle
             </Button>

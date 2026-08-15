@@ -34,7 +34,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Search, Download, Eye, Trash2, LogOut, Loader2, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "wraps" | "tests";
+type Tab = "wraps" | "tests" | "quizzes";
 
 interface WrapRow {
   id: string;
@@ -54,6 +54,16 @@ interface TestRow {
   label: string;
   archetype: string;
   overallScore: number;
+}
+
+interface QuizRow {
+  id: string;
+  creatorName: string;
+  title: string;
+  code: string;
+  createdAt: string;
+  questionCount: number;
+  attempts: number;
 }
 
 function fmtDate(iso: string) {
@@ -86,6 +96,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("wraps");
   const [rows, setRows] = useState<WrapRow[]>([]);
   const [testRows, setTestRows] = useState<TestRow[]>([]);
+  const [quizRows, setQuizRows] = useState<QuizRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -93,7 +104,7 @@ export default function AdminDashboard() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sort, setSort] = useState("newest");
-  const [toDelete, setToDelete] = useState<WrapRow | TestRow | null>(null);
+  const [toDelete, setToDelete] = useState<WrapRow | TestRow | QuizRow | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -117,7 +128,7 @@ export default function AdminDashboard() {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error ?? "Failed to load");
           if (!cancelled) setRows(data.rows ?? []);
-        } else {
+        } else if (tab === "tests") {
           const params = new URLSearchParams();
           if (search) params.set("search", search);
           if (from) params.set("from", from);
@@ -131,6 +142,17 @@ export default function AdminDashboard() {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error ?? "Failed to load");
           if (!cancelled) setTestRows(data.rows ?? []);
+        } else {
+          const params = new URLSearchParams();
+          if (search) params.set("search", search);
+          const res = await fetch(`/api/quiz?${params.toString()}`);
+          if (res.status === 401) {
+            router.push("/admin/login");
+            return;
+          }
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error ?? "Failed to load");
+          if (!cancelled) setQuizRows(data.rows ?? []);
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load data");
@@ -149,15 +171,22 @@ export default function AdminDashboard() {
     setDeleting(true);
     try {
       const kind = tab;
-      const res = await fetch(`/api/${kind === "wraps" ? "submissions" : "assessments"}/${toDelete.id}`, { method: "DELETE" });
+      let res: Response;
+      if (kind === "quizzes") {
+        res = await fetch(`/api/quiz/${"code" in toDelete ? toDelete.code : ""}`, { method: "DELETE" });
+      } else {
+        res = await fetch(`/api/${kind === "wraps" ? "submissions" : "assessments"}/${toDelete.id}`, { method: "DELETE" });
+      }
       if (res.status === 401) {
         router.push("/admin/login");
         return;
       }
       if (!res.ok) throw new Error("Delete failed");
-      toast.success(`Deleted ${"username" in toDelete ? toDelete.username : toDelete.name}'s record`);
+      const label = "username" in toDelete ? toDelete.username : "creatorName" in toDelete ? toDelete.creatorName : toDelete.name;
+      toast.success(`Deleted ${label}'s record`);
       if (kind === "wraps") setRows((r) => r.filter((x) => x.id !== toDelete.id));
-      else setTestRows((r) => r.filter((x) => x.id !== toDelete.id));
+      else if (kind === "tests") setTestRows((r) => r.filter((x) => x.id !== toDelete.id));
+      else setQuizRows((r) => r.filter((x) => x.id !== toDelete.id));
       setToDelete(null);
     } catch {
       toast.error("Could not delete record");
@@ -167,6 +196,35 @@ export default function AdminDashboard() {
   };
 
   const exportCsv = () => {
+    if (tab === "quizzes") {
+      if (quizRows.length === 0) {
+        toast.error("Nothing to export");
+        return;
+      }
+      const header = ["Creator", "Title", "Code", "Date", "Questions", "Attempts", "Link"];
+      const lines = quizRows.map((r) =>
+        [
+          `"${r.creatorName.replace(/"/g, '""')}"`,
+          `"${r.title.replace(/"/g, '""')}"`,
+          `"${r.code}"`,
+          fmtDate(r.createdAt),
+          r.questionCount,
+          r.attempts,
+          `${window.location.origin}/quiz/${r.code}`,
+        ].join(",")
+      );
+      const csv = [header.join(","), ...lines].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `friend-quizzes-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("CSV exported");
+      return;
+    }
+
     if (tab === "wraps") {
       if (rows.length === 0) {
         toast.error("Nothing to export");
@@ -228,18 +286,22 @@ export default function AdminDashboard() {
     router.refresh();
   };
 
-  const total = tab === "wraps" ? rows.length : testRows.length;
+  const total = tab === "wraps" ? rows.length : tab === "tests" ? testRows.length : quizRows.length;
   const avgScore = useMemo(() => {
     if (tab === "wraps")
       return total ? Math.round(rows.reduce((s, r) => s + r.overallScore, 0) / total) : 0;
-    return total ? Math.round(testRows.reduce((s, r) => s + r.overallScore, 0) / total) : 0;
-  }, [tab, rows, testRows, total]);
+    if (tab === "tests")
+      return total ? Math.round(testRows.reduce((s, r) => s + r.overallScore, 0) / total) : 0;
+    return total
+      ? Math.round(quizRows.reduce((s, r) => s + r.attempts, 0) / total)
+      : 0;
+  }, [tab, rows, testRows, quizRows, total]);
 
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-8 pb-16">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/15 blur-[120px]" />
-        <div className="absolute bottom-0 left-0 size-96 rounded-full bg-fuchsia-400/25 dark:bg-fuchsia-600/10 blur-[120px]" />
+        <div className="absolute -top-32 right-0 size-96 rounded-full bg-teal-400/30 dark:bg-teal-600/15 blur-[120px]" />
+        <div className="absolute bottom-0 left-0 size-96 rounded-full bg-emerald-400/25 dark:bg-emerald-600/10 blur-[120px]" />
       </div>
 
       <div className="mx-auto max-w-6xl space-y-6">
@@ -249,8 +311,8 @@ export default function AdminDashboard() {
               📊 Dashboard
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {total} {tab === "wraps" ? "submission" : "test"}
-              {total === 1 ? "" : "s"} · average score {avgScore}
+              {total} {tab === "wraps" ? "submission" : tab === "tests" ? "test" : "quiz"}
+              {total === 1 ? "" : "s"} · {tab === "quizzes" ? "avg attempts" : "average score"} {avgScore}
             </p>
           </div>
           <div className="flex gap-2 items-center">
@@ -264,7 +326,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="glass rounded-3xl p-1.5 grid grid-cols-2 gap-1 max-w-sm">
+        <div className="glass rounded-3xl p-1.5 grid grid-cols-3 gap-1 max-w-md">
           <button
             onClick={() => {
               setTab("wraps");
@@ -273,7 +335,7 @@ export default function AdminDashboard() {
             className={cn(
               "rounded-2xl px-4 py-2.5 text-sm font-semibold transition-colors",
               tab === "wraps"
-                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-500/20"
+                ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -287,11 +349,25 @@ export default function AdminDashboard() {
             className={cn(
               "rounded-2xl px-4 py-2.5 text-sm font-semibold transition-colors",
               tab === "tests"
-                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-500/20"
+                ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            🧠 Personality Tests
+            🧠 Tests
+          </button>
+          <button
+            onClick={() => {
+              setTab("quizzes");
+              setSearch("");
+            }}
+            className={cn(
+              "rounded-2xl px-4 py-2.5 text-sm font-semibold transition-colors",
+              tab === "quizzes"
+                ? "bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-lg shadow-amber-500/20"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            👀 Quizzes
           </button>
         </div>
 
@@ -299,7 +375,13 @@ export default function AdminDashboard() {
           <div className="relative lg:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder={tab === "wraps" ? "Search by username..." : "Search by name..."}
+              placeholder={
+                tab === "wraps"
+                  ? "Search by username..."
+                  : tab === "tests"
+                    ? "Search by name..."
+                    : "Search by creator or title..."
+              }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -322,8 +404,12 @@ export default function AdminDashboard() {
           ) : (
             <div className="hidden lg:block" />
           )}
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date" />
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date" />
+          {tab !== "quizzes" && (
+            <>
+              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date" />
+              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date" />
+            </>
+          )}
         </div>
 
         <div className="glass rounded-3xl overflow-hidden">
@@ -411,7 +497,7 @@ export default function AdminDashboard() {
                 )}
               </TableBody>
             </Table>
-          ) : (
+          ) : tab === "tests" ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -500,6 +586,76 @@ export default function AdminDashboard() {
                 )}
               </TableBody>
             </Table>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Creator</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Questions</TableHead>
+                  <TableHead>Attempts</TableHead>
+                  <TableHead>
+                    <button
+                      onClick={() => setSort(sort === "oldest" ? "newest" : "oldest")}
+                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                    >
+                      Date
+                      <span className="text-[10px]">{sort === "oldest" ? "↑" : ""}</span>
+                    </button>
+                  </TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                      <Loader2 className="mx-auto size-6 animate-spin" />
+                      Loading quizzes...
+                    </TableCell>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-32 text-center text-destructive">{error}</TableCell>
+                  </TableRow>
+                ) : quizRows.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                      <Inbox className="mx-auto size-8 mb-2 opacity-50" />
+                      No quizzes found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  quizRows.map((r) => (
+                    <TableRow key={r.id} className="group">
+                      <TableCell className="font-semibold">{r.creatorName}</TableCell>
+                      <TableCell className="text-muted-foreground max-w-[220px] truncate" title={r.title}>
+                        {r.title}
+                      </TableCell>
+                      <TableCell>{r.questionCount}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                          {r.attempts} played
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">{fmtDate(r.createdAt)}</TableCell>
+                      <TableCell className="font-mono font-bold">{r.code}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                          <Button size="sm" variant="ghost" render={<Link href={`/admin/quiz/${r.id}`} />}>
+                            <Eye className="mr-1.5 size-4" /> View
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setToDelete(r)}>
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           )}
         </div>
 
@@ -511,13 +667,22 @@ export default function AdminDashboard() {
       <Dialog open={!!toDelete} onOpenChange={(open) => !open && setToDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tab === "wraps" ? "Delete submission?" : "Delete test?"}</DialogTitle>
+            <DialogTitle>
+              {tab === "wraps" ? "Delete submission?" : tab === "tests" ? "Delete test?" : "Delete quiz?"}
+            </DialogTitle>
             <DialogDescription>
               This permanently deletes{" "}
               <span className="font-semibold text-foreground">
-                {toDelete ? ("username" in toDelete ? toDelete.username : toDelete.name) : ""}
+                {toDelete
+                  ? "username" in toDelete
+                    ? toDelete.username
+                    : "creatorName" in toDelete
+                      ? toDelete.creatorName
+                      : toDelete.name
+                  : ""}
               </span>
-              &apos;s {tab === "wraps" ? "wrapped" : "personality"} record. This cannot be undone.
+              &apos;s {tab === "wraps" ? "wrapped" : tab === "tests" ? "personality" : "quiz"} record
+              {tab === "quizzes" ? " and all its attempts" : ""}. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

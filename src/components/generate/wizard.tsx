@@ -48,7 +48,7 @@ function StepShell({
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-        <span className="size-6 grid place-items-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-xs font-bold">
+        <span className="size-6 grid place-items-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-white text-xs font-bold">
           {step}
         </span>
         <span>Step {step} of 4</span>
@@ -99,7 +99,7 @@ function StepUsername() {
         </div>
         <Button
           onClick={next}
-          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500"
         >
           Continue <ArrowRight className="ml-2 size-4" />
         </Button>
@@ -126,7 +126,7 @@ function StepAI() {
             className={cn(
               "glass rounded-2xl p-4 text-left transition-all hover:bg-black/5 dark:hover:bg-white/[0.08] border",
               aiUsed === ai.value
-                ? "border-fuchsia-400/70 bg-fuchsia-500/15 ring-2 ring-fuchsia-400/40"
+                ? "border-teal-400/70 bg-teal-500/15 ring-2 ring-teal-400/40"
                 : "border-black/10 dark:border-white/10"
             )}
           >
@@ -143,7 +143,7 @@ function StepAI() {
         <Button
           disabled={!aiUsed}
           onClick={() => setConfirmOpen(true)}
-          className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+          className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500"
         >
           Continue <ArrowRight className="ml-2 size-4" />
         </Button>
@@ -174,7 +174,7 @@ function StepAI() {
                 setConfirmOpen(false);
                 setStep(2);
               }}
-              className="bg-gradient-to-r from-violet-600 to-fuchsia-600"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600"
             >
               Yes, it&apos;s {aiUsed} — Confirm <ArrowRight className="ml-1.5 size-4" />
             </Button>
@@ -226,7 +226,7 @@ function StepPrompt() {
         </Button>
         <Button
           onClick={() => setStep(3)}
-          className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+          className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500"
         >
           I got the answer <ArrowRight className="ml-2 size-4" />
         </Button>
@@ -270,7 +270,7 @@ function StepResponse() {
           <Button
             disabled={count < MIN}
             onClick={() => setStep(4)}
-            className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-cyan-400"
+            className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-500 hover:from-teal-500 hover:via-emerald-500 hover:to-cyan-400"
           >
             <Sparkles className="mr-2 size-4" /> Generate My {WRAPPED_FEATURE_NAME}
           </Button>
@@ -294,7 +294,7 @@ function StepGenerating() {
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="mx-auto size-24 rounded-full border-4 border-black/10 dark:border-white/10 border-t-fuchsia-500 border-r-violet-500"
+        className="mx-auto size-24 rounded-full border-4 border-black/10 dark:border-white/10 border-t-emerald-500 border-r-teal-500"
       />
       <AnimatePresence mode="wait">
         <motion.p
@@ -363,7 +363,7 @@ export default function GenerateClient() {
   return (
     <main className="relative flex-1 px-4 pt-28 pb-16 min-h-screen overflow-hidden">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/20 blur-[120px]" />
+        <div className="absolute -top-32 right-0 size-96 rounded-full bg-teal-400/30 dark:bg-teal-600/20 blur-[120px]" />
         <div className="absolute bottom-0 -left-32 size-96 rounded-full bg-cyan-400/25 dark:bg-cyan-500/10 blur-[120px]" />
       </div>
       <div className="mx-auto max-w-6xl">
@@ -380,7 +380,7 @@ export default function GenerateClient() {
                 key={i}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
-                  i === step ? "w-8 bg-gradient-to-r from-violet-500 to-fuchsia-500" : "w-3 bg-black/15 dark:bg-white/15"
+                  i === step ? "w-8 bg-gradient-to-r from-teal-500 to-emerald-500" : "w-3 bg-black/15 dark:bg-white/15"
                 )}
               />
             ))}

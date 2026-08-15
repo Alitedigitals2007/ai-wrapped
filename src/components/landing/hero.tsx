@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/brand";
+import { Reveal } from "./shared";
 
 const steps = [
   {
@@ -13,7 +14,7 @@ const steps = [
   {
     emoji: "🎯",
     title: "Answer scenarios",
-    text: "A few short situations — what you'd do, why, what you value.",
+      text: "A few short situations — what you'd do, why, what you value.",
   },
   {
     emoji: "🧬",
@@ -63,9 +64,9 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
-          {APP_NAME} turns a short scenario-based test into a beautiful, shareable
-          personality report — 15 dimensions, AI-written insights, and a public
-          link anyone can open. In under 4 minutes.
+          {APP_NAME} is a playground of fun: a scenario-based personality test, a
+          &quot;Who knows me best?&quot; quiz for you and your friends, and the classic
+          AI Wrapped story. All free, no account needed.
         </motion.p>
 
         <motion.div
@@ -76,9 +77,15 @@ export function Hero() {
         >
           <Link
             href="/personality"
-            className="rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
+            className="rounded-full bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
           >
             Test my personality ✨
+          </Link>
+          <Link
+            href="/quiz"
+            className="rounded-full bg-gradient-to-r from-amber-500 to-rose-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
+          >
+            Make a quiz 👀
           </Link>
           <a
             href="#how"
@@ -99,6 +106,80 @@ export function Hero() {
           <span>📱 Mobile-first</span>
           <span>🆓 Free</span>
         </motion.div>
+      </div>
+    </section>
+  );
+}
+
+export function Choose() {
+  const options = [
+    {
+      href: "/personality",
+      emoji: "🧠",
+      title: "Personality Test",
+      tag: "New",
+      text: "Answer short scenarios, get 15 dimensions scored, and receive an AI-written personality report you can share by link.",
+      cta: "Test my personality ✨",
+      grad: "bg-gradient-to-br from-teal-600 via-emerald-600 to-cyan-500",
+      time: "~3 min",
+    },
+    {
+      href: "/quiz",
+      emoji: "👀",
+      title: "Who Knows Me Best?",
+      tag: "Game",
+      text: "Write your own questions about you, send the code, and see which friend really knows you best.",
+      cta: "Make a quiz 👀",
+      grad: "bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500",
+      time: "~2 min",
+    },
+    {
+      href: "/generate",
+      emoji: "🤖",
+      title: "AI Wrapped",
+      tag: "Classic",
+      text: "Paste your AI chats and get the original Wrapped-style story — your personality, strengths, career match and predictions.",
+      cta: "Generate an AI Wrap 🤖",
+      grad: "bg-gradient-to-br from-sky-600 via-blue-600 to-cyan-600",
+      time: "~30 sec",
+    },
+  ];
+  return (
+    <section id="choose" className="px-4 py-24 scroll-mt-24">
+      <div className="mx-auto max-w-6xl">
+        <Reveal className="text-center">
+          <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight">
+            What do you want to <span className="text-gradient">try?</span>
+          </h2>
+          <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
+            Three ways to have fun — pick one, or do them all.
+          </p>
+        </Reveal>
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
+          {options.map((o, i) => (
+            <Reveal key={o.title} delay={i * 0.1}>
+              <Link
+                href={o.href}
+                className={`group relative block overflow-hidden rounded-[2.5rem] ${o.grad} p-8 text-white hover:scale-[1.02] active:scale-[0.99] transition-transform shadow-2xl shadow-black/20 h-full`}
+              >
+                <span className="absolute -top-10 -right-10 size-48 rounded-full bg-white/15 blur-2xl" />
+                <div className="relative flex flex-col h-full">
+                  <div className="flex items-center justify-between">
+                    <span className="text-5xl">{o.emoji}</span>
+                    <span className="rounded-full bg-white/20 border border-white/30 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                      {o.tag} · {o.time}
+                    </span>
+                  </div>
+                  <h3 className="mt-8 font-display text-3xl font-bold">{o.title}</h3>
+                  <p className="mt-3 text-white/80 leading-relaxed">{o.text}</p>
+                  <span className="mt-auto pt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-black group-hover:gap-3 transition-all">
+                    {o.cta} →
+                  </span>
+                </div>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,5 @@
 import { Navbar, BackgroundFX } from "@/components/landing/shared";
-import { Hero, HowItWorks } from "@/components/landing/hero";
+import { Hero, Choose, HowItWorks } from "@/components/landing/hero";
 import { CompareSection } from "@/components/landing/compare-section";
 import { Features, FAQ, Footer, CTA } from "@/components/landing/sections";
 
@@ -9,6 +9,7 @@ export default function Home() {
       <BackgroundFX />
       <Navbar />
       <Hero />
+      <Choose />
       <HowItWorks />
       <Features />
       <CompareSection />

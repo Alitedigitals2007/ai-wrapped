@@ -37,7 +37,7 @@ function ScoreBar({ value, max }: { value: number; max: number }) {
   return (
     <div className="h-2 w-full rounded-full bg-black/10 overflow-hidden dark:bg-white/10">
       <div
-        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+        className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500"
         style={{ width: max > 0 ? `${(value / max) * 100}%` : "0%" }}
       />
     </div>
@@ -51,7 +51,7 @@ function PlayerCard({ data, winner }: { data: Entry; winner: boolean }) {
     return (
       <div className={cn("space-y-6", winner && "order-first md:order-none")}>
         <div className="text-center">
-          <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-2xl">
+          <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 text-2xl">
             🧠
           </div>
           <h1 className="mt-3 font-display text-2xl md:text-3xl font-bold tracking-tight">
@@ -112,7 +112,7 @@ function PlayerCard({ data, winner }: { data: Entry; winner: boolean }) {
   return (
     <div className={cn("space-y-6", winner && "order-first md:order-none")}>
       <div className="text-center">
-        <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-2xl">
+        <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 text-2xl">
           {AI_EMOJI[data.aiUsed] ?? "🤖"}
         </div>
         <h1 className="mt-3 font-display text-2xl md:text-3xl font-bold tracking-tight">
@@ -243,8 +243,8 @@ export default function CompareClient() {
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-20 pb-16">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 size-[28rem] rounded-full bg-violet-400/30 dark:bg-violet-600/20 blur-[130px] animate-float-slow" />
-        <div className="absolute bottom-0 right-0 size-[26rem] rounded-full bg-fuchsia-400/25 dark:bg-fuchsia-600/20 blur-[130px] animate-float-slower" />
+        <div className="absolute top-0 left-1/4 size-[28rem] rounded-full bg-teal-400/30 dark:bg-teal-600/20 blur-[130px] animate-float-slow" />
+        <div className="absolute bottom-0 right-0 size-[26rem] rounded-full bg-emerald-400/25 dark:bg-emerald-600/20 blur-[130px] animate-float-slower" />
       </div>
 
       <div className="mx-auto max-w-4xl">
@@ -286,7 +286,7 @@ export default function CompareClient() {
           <Button
             onClick={start}
             disabled={loading || meCode.trim().length < 4 || themCode.trim().length < 4}
-            className="h-12 px-6 bg-gradient-to-r from-violet-600 to-fuchsia-600"
+            className="h-12 px-6 bg-gradient-to-r from-teal-600 to-emerald-600"
           >
             <Swords className="mr-1.5 size-4" /> Battle
           </Button>

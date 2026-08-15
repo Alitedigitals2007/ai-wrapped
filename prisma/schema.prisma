@@ -38,3 +38,32 @@ model Assessment {
   @@index([createdAt])
   @@map("assessments")
 }
+
+model FriendQuiz {
+  id           String        @id @default(cuid())
+  creatorName  String
+  title        String        @default("Who knows me best?")
+  questionsJson Json
+  code         String        @unique
+  createdAt    DateTime      @default(now()) @map("created_at")
+  attempts     QuizAttempt[]
+
+  @@index([createdAt])
+  @@map("friend_quizzes")
+}
+
+model QuizAttempt {
+  id          String    @id @default(cuid())
+  quizId      String
+  playerName  String
+  answersJson Json
+  score       Int
+  total       Int
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  quiz FriendQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@index([createdAt])
+  @@map("quiz_attempts")
+}

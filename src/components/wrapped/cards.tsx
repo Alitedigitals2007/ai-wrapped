@@ -15,22 +15,22 @@ type CardTheme = {
 
 const THEMES: Record<string, CardTheme> = {
   welcome: {
-    bg: "bg-gradient-to-br from-violet-600 via-fuchsia-600 to-cyan-500",
+    bg: "bg-gradient-to-br from-teal-600 via-emerald-600 to-cyan-500",
     orb: "bg-white/25",
     orb2: "bg-cyan-300/40",
   },
   personality: {
-    bg: "bg-gradient-to-br from-fuchsia-600 via-pink-600 to-rose-500",
+    bg: "bg-gradient-to-br from-rose-600 via-pink-500 to-orange-500",
     orb: "bg-white/25",
     orb2: "bg-amber-300/30",
   },
   thinking: {
     bg: "bg-gradient-to-br from-cyan-600 via-sky-600 to-blue-600",
     orb: "bg-white/25",
-    orb2: "bg-fuchsia-300/30",
+    orb2: "bg-emerald-300/30",
   },
   scores: {
-    bg: "bg-gradient-to-br from-violet-700 via-purple-600 to-indigo-600",
+    bg: "bg-gradient-to-br from-sky-700 via-blue-600 to-cyan-600",
     orb: "bg-white/25",
     orb2: "bg-cyan-300/30",
   },
@@ -42,7 +42,7 @@ const THEMES: Record<string, CardTheme> = {
   interests: {
     bg: "bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600",
     orb: "bg-white/25",
-    orb2: "bg-violet-300/30",
+    orb2: "bg-sky-300/30",
   },
   strengths: {
     bg: "bg-gradient-to-br from-teal-600 via-emerald-600 to-lime-600",
@@ -50,7 +50,7 @@ const THEMES: Record<string, CardTheme> = {
     orb2: "bg-cyan-300/30",
   },
   fun: {
-    bg: "bg-gradient-to-br from-pink-600 via-fuchsia-600 to-purple-600",
+    bg: "bg-gradient-to-br from-rose-600 via-orange-500 to-amber-500",
     orb: "bg-white/25",
     orb2: "bg-cyan-300/30",
   },
@@ -60,17 +60,17 @@ const THEMES: Record<string, CardTheme> = {
     orb2: "bg-rose-300/30",
   },
   career: {
-    bg: "bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700",
+    bg: "bg-gradient-to-br from-sky-600 via-blue-600 to-cyan-700",
     orb: "bg-white/25",
     orb2: "bg-emerald-300/30",
   },
   predictions: {
-    bg: "bg-gradient-to-br from-purple-700 via-violet-600 to-fuchsia-600",
+    bg: "bg-gradient-to-br from-blue-700 via-sky-600 to-cyan-600",
     orb: "bg-white/25",
     orb2: "bg-cyan-300/30",
   },
   share: {
-    bg: "bg-gradient-to-br from-violet-700 via-fuchsia-600 to-cyan-500",
+    bg: "bg-gradient-to-br from-teal-700 via-emerald-600 to-cyan-500",
     orb: "bg-white/25",
     orb2: "bg-amber-300/30",
   },

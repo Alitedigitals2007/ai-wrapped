@@ -43,14 +43,14 @@ export default function AdminLogin() {
   return (
     <main className="relative flex-1 min-h-screen grid place-items-center px-4">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/20 blur-[130px]" />
-        <div className="absolute bottom-1/4 right-1/4 size-96 rounded-full bg-fuchsia-400/25 dark:bg-fuchsia-600/20 blur-[130px]" />
+        <div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-teal-400/30 dark:bg-teal-600/20 blur-[130px]" />
+        <div className="absolute bottom-1/4 right-1/4 size-96 rounded-full bg-emerald-400/25 dark:bg-emerald-600/20 blur-[130px]" />
       </div>
       <div className="fixed top-4 right-4">
         <ThemeToggle />
       </div>
       <form onSubmit={submit} className="glass rounded-3xl p-8 w-full max-w-sm">
-        <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600">
+        <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600">
           <Lock className="size-6 text-white" />
         </div>
         <h1 className="mt-5 text-center font-display text-2xl font-bold">Admin Login</h1>

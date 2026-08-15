@@ -118,7 +118,7 @@ export default function AdminTestDetails() {
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-8 pb-16">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-32 right-0 size-96 rounded-full bg-violet-400/30 dark:bg-violet-600/15 blur-[120px]" />
+        <div className="absolute -top-32 right-0 size-96 rounded-full bg-teal-400/30 dark:bg-teal-600/15 blur-[120px]" />
       </div>
 
       <div className="mx-auto max-w-4xl space-y-6">
@@ -138,7 +138,7 @@ export default function AdminTestDetails() {
         </div>
 
         <div className="glass rounded-3xl p-6 flex flex-wrap items-center gap-4">
-          <div className="size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-2xl">
+          <div className="size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 text-2xl">
             🧠
           </div>
           <div className="min-w-0">
@@ -191,7 +191,7 @@ export default function AdminTestDetails() {
                   </div>
                   <div className="mt-2 h-1.5 rounded-full bg-black/10 overflow-hidden dark:bg-white/10">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                      className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500"
                       style={{ width: `${value}%` }}
                     />
                   </div>

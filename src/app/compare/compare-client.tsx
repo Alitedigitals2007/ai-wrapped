@@ -7,19 +7,31 @@ import { toast } from "sonner";
 import type { Analysis } from "@/lib/analysis/types";
 import { SCORE_KEYS } from "@/lib/analysis/types";
 import { AI_EMOJI } from "@/lib/analysis/prompt";
+import type { PersonalityReport } from "@/lib/personality/types";
+import type { DimensionScores } from "@/lib/personality/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ArrowLeft, Loader2, Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface WrapData {
-  id: string;
-  username: string;
-  aiUsed: string;
-  code: string | null;
-  analysis: Analysis;
-}
+type Entry =
+  | {
+      type: "wrapped";
+      id: string;
+      username: string;
+      aiUsed: string;
+      code: string | null;
+      analysis: Analysis;
+    }
+  | {
+      type: "report";
+      id: string;
+      name: string;
+      code: string | null;
+      report: PersonalityReport;
+      scores: DimensionScores;
+    };
 
 function ScoreBar({ value, max }: { value: number; max: number }) {
   return (
@@ -32,15 +44,71 @@ function ScoreBar({ value, max }: { value: number; max: number }) {
   );
 }
 
-function PlayerCard({
-  data,
-  winner,
-}: {
-  data: WrapData | null;
-  winner: boolean;
-}) {
-  const a = data?.analysis;
-  if (!a) return null;
+function PlayerCard({ data, winner }: { data: Entry; winner: boolean }) {
+  if (data.type === "report") {
+    const r = data.report;
+    const top = [...r.highlights].sort((a, b) => b.score - a.score).slice(0, 6);
+    return (
+      <div className={cn("space-y-6", winner && "order-first md:order-none")}>
+        <div className="text-center">
+          <div className="mx-auto size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-2xl">
+            🧠
+          </div>
+          <h1 className="mt-3 font-display text-2xl md:text-3xl font-bold tracking-tight">
+            {data.name}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {r.archetype} · <span className="font-mono font-bold">{data.code}</span>
+          </p>
+          {winner && (
+            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-300">
+              👑 Winning the battle
+            </span>
+          )}
+        </div>
+
+        <div className="glass rounded-3xl p-5">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Tagline</p>
+          <p className="text-sm italic leading-relaxed">“{r.tagline}”</p>
+        </div>
+
+        <div className="glass rounded-3xl p-5">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-4">
+            Top Dimensions
+          </p>
+          <div className="space-y-3">
+            {top.map((h) => (
+              <div key={h.key}>
+                <div className="flex justify-between text-[13px] mb-1">
+                  <span className="text-muted-foreground">
+                    {h.emoji} {h.label}
+                  </span>
+                  <span className="font-bold tabular-nums">{h.score}</span>
+                </div>
+                <ScoreBar value={h.score} max={100} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            ["Strengths", r.strengths.slice(0, 2).join(", ")],
+            ["Growth", r.growthAreas.slice(0, 2).join(", ")],
+            ["Careers", r.careers.slice(0, 2).join(", ")],
+            ["Conflict", r.styles.conflict],
+          ].map(([label, value]) => (
+            <div key={label} className="glass rounded-2xl p-4">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
+              <p className="mt-1 font-semibold text-sm leading-snug">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const a = data.analysis;
   return (
     <div className={cn("space-y-6", winner && "order-first md:order-none")}>
       <div className="text-center">
@@ -99,13 +167,32 @@ function PlayerCard({
   );
 }
 
+function winnerOf(a: Entry, b: Entry): number {
+  if (a.type === "report" && b.type === "report") {
+    const av = a.report.highlights.reduce((s, h) => s + h.score, 0);
+    const bv = b.report.highlights.reduce((s, h) => s + h.score, 0);
+    return av - bv;
+  }
+  if (a.type === "wrapped" && b.type === "wrapped") {
+    return a.analysis.scores.overall - b.analysis.scores.overall;
+  }
+  // Mixed comparison: use overall wrapped score vs. average dimension score.
+  const av = a.type === "wrapped" ? a.analysis.scores.overall : avgScore(a.report.highlights.map((h) => h.score));
+  const bv = b.type === "wrapped" ? b.analysis.scores.overall : avgScore(b.report.highlights.map((h) => h.score));
+  return av - bv;
+}
+
+function avgScore(nums: number[]): number {
+  return nums.length ? nums.reduce((s, n) => s + n, 0) / nums.length : 0;
+}
+
 export default function CompareClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [meCode, setMeCode] = useState(searchParams.get("me") ?? "");
   const [themCode, setThemCode] = useState(searchParams.get("them") ?? "");
-  const [me, setMe] = useState<WrapData | null>(null);
-  const [them, setThem] = useState<WrapData | null>(null);
+  const [me, setMe] = useState<Entry | null>(null);
+  const [them, setThem] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -114,7 +201,7 @@ export default function CompareClient() {
       if (!meCode || !themCode) return;
       setLoading(true);
       setError(null);
-      const load = async (code: string): Promise<WrapData | null> => {
+      const load = async (code: string): Promise<Entry | null> => {
         const res = await fetch(`/api/lookup?code=${encodeURIComponent(code)}`);
         if (res.status === 404) return null;
         if (!res.ok) throw new Error("load failed");
@@ -127,13 +214,13 @@ export default function CompareClient() {
         ]);
         if (!m || !t) {
           const missing = !m ? meCode : themCode;
-          setError(`No wrap found with code "${missing.toUpperCase()}". Double-check it.`);
+          setError(`No wrap or report found with code "${missing.toUpperCase()}". Double-check it.`);
           return;
         }
         setMe(m);
         setThem(t);
       } catch {
-        setError("Couldn't load the wraps. Try again.");
+        setError("Couldn't load the results. Try again.");
       } finally {
         setLoading(false);
       }
@@ -150,6 +237,8 @@ export default function CompareClient() {
     setThem(null);
     router.replace(`/compare?me=${meCode.toUpperCase()}&them=${themCode.toUpperCase()}`);
   };
+
+  const winner = me && them ? winnerOf(me, them) : 0;
 
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-20 pb-16">
@@ -171,10 +260,10 @@ export default function CompareClient() {
 
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight">
-            Wrapped <span className="text-gradient">Battle</span> 🥊
+            Personality <span className="text-gradient">Battle</span> 🥊
           </h1>
           <p className="mt-2 text-muted-foreground max-w-lg mx-auto">
-            Enter two AI Wrapped codes to see who comes out on top.
+            Enter two codes — wrapped or personality reports — to see who comes out on top.
           </p>
         </div>
 
@@ -224,18 +313,18 @@ export default function CompareClient() {
               Winner by overall score
             </p>
             <div className="grid gap-8 md:grid-cols-2 md:gap-10">
-              <PlayerCard data={me} winner={me.analysis.scores.overall >= them.analysis.scores.overall} />
-              <PlayerCard data={them} winner={them.analysis.scores.overall > me.analysis.scores.overall} />
+              <PlayerCard data={me} winner={winner >= 0} />
+              <PlayerCard data={them} winner={winner < 0} />
             </div>
             <p className="text-center text-xs text-muted-foreground/70 pt-4">
-              Built by Alite · AI Wrapped
+              Built by Alite · Personality Battle
             </p>
           </div>
         )}
 
         {!me && !them && !loading && !error && (
           <p className="text-center text-sm text-muted-foreground py-10">
-            Tip: your wrap&apos;s code is on your share card.
+            Tip: your report&apos;s code is on your share card.
           </p>
         )}
       </div>

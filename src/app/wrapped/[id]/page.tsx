@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { mergeAnalysis, type Analysis } from "@/lib/analysis/types";
 import { AI_EMOJI } from "@/lib/analysis/prompt";
+import { APP_NAME, WRAPPED_FEATURE_NAME } from "@/lib/brand";
 import WrappedViewer from "@/components/wrapped/wrapped-viewer";
 
 export const dynamic = "force-dynamic";
@@ -18,13 +19,13 @@ export async function generateMetadata({
       where: { id },
       select: { username: true, aiUsed: true },
     });
-    if (!submission) return { title: "Wrapped Not Found" };
+    if (!submission) return { title: `${WRAPPED_FEATURE_NAME} Not Found` };
     return {
-      title: `${submission.username}'s AI Wrapped`,
-      description: `Discover how AI sees ${submission.username} — an AI Wrapped powered by ${submission.aiUsed}.`,
+      title: `${submission.username}'s ${WRAPPED_FEATURE_NAME}`,
+      description: `Discover how AI sees ${submission.username} — a ${WRAPPED_FEATURE_NAME} powered by ${submission.aiUsed}.`,
     };
   } catch {
-    return { title: "AI Wrapped" };
+    return { title: APP_NAME };
   }
 }
 

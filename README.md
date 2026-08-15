@@ -1,24 +1,50 @@
-# AI Wrapped 🪄
+# Aura 🧠
 
-**"Discover how AI sees you."**
+**"Know yourself. Share it."**
 
-A premium, mobile-first web app that turns a person's AI conversations into a
-Spotify Wrapped–style experience — animated full-screen cards, skill scores,
-personality analysis, career matches, badges, predictions, and a shareable
-PNG. No accounts required for users; a password-protected admin dashboard
-shows every submission.
+A premium, mobile-first web app that reveals personality in two ways — and
+makes it shareable, comparable, and fun:
+
+1. **Personality Test** — answer ~40 scenario-based questions (situations,
+   decisions, values, conflicts, self-perception) and get a beautiful,
+   AI-written personality report across **15 dimensions** (0–100), with a
+   public shareable link, PNG cards, and head-to-head compare by code.
+2. **AI Wrapped** — the original feature that turns a person's AI conversations
+   into a Spotify Wrapped–style experience (animated cards, skill scores,
+   career matches, badges, PNG share).
+
+No accounts required for users; a password-protected admin dashboard shows
+every submission and every personality test.
 
 ## Features
 
+### Personality Test (new)
+- **35 scenario MCQs + 6 optional written prompts** across Social Energy,
+  Decision Making, Pressure & Failure, Relationships & Trust, Values,
+  Conflict, Life Preferences, and Self-Perception
+- **15 dimension scores** — Extraversion, Openness, Conscientiousness,
+  Agreeableness, Emotional Stability, Assertiveness, Risk Tolerance,
+  Independence, Empathy, Resilience, Ambition, Adaptability, Trust,
+  Conflict Directness, Self-Awareness
+- **AI-written report** — archetype, tagline, narrative summary, strengths,
+  growth areas, blind spot, social/decision/conflict styles, career directions,
+  fun fact (Groq via OpenAI-compatible API, with a built-in fallback)
+- **Shareable report** at `/report/[code]` — public URL + 6-character code,
+  download/share each card as PNG
+- **Compare** — battle two reports (or a report vs. an AI wrap) head-to-head
+  by code on `/compare`
+- **Admin section** — same dashboard, new "Personality Tests" tab: search,
+  date filter, sort by average dimension score, CSV export, delete, and a
+  details page showing every answer + full report
+
+### AI Wrapped
 - **Landing page** — hero, how it works, features, FAQ, footer (SEO-friendly, light + dark, animated)
 - **5-step Generate flow** — username → pick AI → confirm popup → copy engineered prompt → paste AI's response → animated "Building your Wrapped…" loading
 - **12-card Wrapped viewer** — swipe on mobile, buttons + keyboard on desktop, each card can be downloaded or shared individually with captions
-- **Share card** — Download PNG (html-to-image), native Share / copy link, Generate Again
-- **Compare by code** — every Wrapped gets a unique 6-character code on its share card; enter two codes on `/compare` to battle two Wraps head-to-head (scores + key cards side by side)
+- **Compare by code** — every Wrapped gets a unique 6-character code; enter two codes on `/compare` to battle two Wraps head-to-head
 - **Analysis engine** — structured JSON with personality, 8 scores, language habits, interests, productivity, career matches, strengths, fun facts, achievements, predictions
   - Primary: **Groq** (OpenAI-compatible API, free tier, `https://api.groq.com/openai/v1`)
   - Fallback: built-in deterministic analyzer — works with **zero API keys**
-- **Admin dashboard** — secure login, table with search, AI filter, date filter, sort by score, CSV export, delete, and a details page showing every extracted answer + original prompt/response
 
 ## Tech Stack
 
@@ -79,13 +105,10 @@ Open http://localhost:3000. Admin dashboard: http://localhost:3000/admin/login (
    - `GROQ_MODEL` — default `llama-3.3-70b-versatile`
    - `ADMIN_PASSWORD` — admin dashboard password
    - `SESSION_SECRET` — long random string
-   - `NEXT_PUBLIC_APP_URL` — your Vercel app URL, e.g. `https://ai-wrapped.vercel.app`
+   - `NEXT_PUBLIC_APP_URL` — your Vercel app URL, e.g. `https://aura.vercel.app`
 3. `npm install` on Vercel runs `prisma generate` automatically (`postinstall`).
 4. After first deploy, run `npm run db:push` locally (or `prisma migrate deploy` via a build step) to create tables.
 5. **Important:** never copy your real values into `.env.example` — that file is committed and must only contain placeholders.
-
-> Note: the first page-load is optimized for <3s; the Wrapped page is
-> server-rendered on demand and cards animate client-side.
 
 ## Security & Secrets
 
@@ -102,19 +125,27 @@ Open http://localhost:3000. Admin dashboard: http://localhost:3000/admin/login (
 src/
   app/                    # Pages & API routes (App Router)
     page.tsx              # Landing page
-    generate/             # Wrapped generation wizard
+    personality/          # Scenario-based personality test flow
+    report/[code]/        # Public shareable personality report
+    generate/             # AI Wrapped generation wizard
     wrapped/[id]/         # The animated Wrapped experience
-    admin/                # Dashboard, details, login
-    api/submissions/      # Create / list / get / delete submissions
+    compare/              # Head-to-head compare by code (wraps + reports)
+    admin/                # Dashboard, details, login (wraps + tests tabs)
+    api/assessments/      # Personality test create / list / get / delete
+    api/submissions/      # AI Wrapped create / list / get / delete
+    api/lookup/           # Code lookup for compare (wraps + reports)
     api/admin/            # Login / logout
   components/
     landing/              # Landing page sections
     generate/             # Wizard steps
+    personality/          # Test client + report viewer
     wrapped/              # Wrapped cards + viewer
   lib/
+    personality/          # Question bank, scoring, LLM report, types
     analysis/             # Engineered prompt, Groq client, fallback analyzer, types
+    brand.ts              # App name / tagline constants
     prisma.ts             # Prisma client singleton
     session.ts            # Admin session (jose)
   store/wizard.ts         # Zustand wizard state
-prisma/schema.prisma      # Submission model
+prisma/schema.prisma      # Submission + Assessment models
 ```

@@ -5,6 +5,7 @@ import type { Analysis } from "@/lib/analysis/types";
 import { SCORE_KEYS } from "@/lib/analysis/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { WRAPPED_FEATURE_NAME } from "@/lib/brand";
 
 type CardTheme = {
   bg: string;
@@ -203,7 +204,7 @@ export function WelcomeCard({
         >
           {aiEmoji}
         </motion.div>
-        <p className="mt-8 text-sm uppercase tracking-[0.3em] text-white/60">AI Wrapped presents</p>
+        <p className="mt-8 text-sm uppercase tracking-[0.3em] text-white/60">{WRAPPED_FEATURE_NAME} presents</p>
         <h1 className="mt-3 font-display text-5xl md:text-7xl font-bold tracking-tight text-gradient-bright">
           {username}
         </h1>

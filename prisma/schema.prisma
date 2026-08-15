@@ -23,3 +23,18 @@ model Submission {
   @@index([createdAt])
   @@map("submissions")
 }
+
+model Assessment {
+  id          String    @id @default(cuid())
+  name        String
+  answersJson Json
+  scoresJson  Json
+  reportJson  Json?
+  code        String?   @unique
+  engine      String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([name])
+  @@index([createdAt])
+  @@map("assessments")
+}

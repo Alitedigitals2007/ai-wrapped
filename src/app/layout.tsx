@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,24 +25,24 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AI Wrapped — Discover how AI sees you",
-    template: "%s · AI Wrapped",
+    default: `${APP_NAME} — ${APP_TAGLINE}`,
+    template: `%s · ${APP_NAME}`,
   },
   description:
-    "AI Wrapped reveals your AI personality. Get a beautiful, shareable Spotify Wrapped-style summary of how you use AI.",
-  keywords: ["AI Wrapped", "AI personality", "AI wrapped", "personality test"],
+    `${APP_NAME} reveals your personality. Get a beautiful, shareable Spotify Wrapped-style report of how you think, decide, and connect.`,
+  keywords: [`${APP_NAME}`, "personality test", "personality report", "AI personality", "who am I"],
   openGraph: {
-    title: "AI Wrapped — Discover how AI sees you",
+    title: `${APP_NAME} — ${APP_TAGLINE}`,
     description:
-      "Paste your AI conversation and get a stunning, shareable summary of your AI personality.",
+      "Take a short scenario-based test and get a stunning, shareable report of your personality.",
     type: "website",
-    siteName: "AI Wrapped",
+    siteName: APP_NAME,
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Wrapped — Discover how AI sees you",
+    title: `${APP_NAME} — ${APP_TAGLINE}`,
     description:
-      "Paste your AI conversation and get a stunning, shareable summary of your AI personality.",
+      "Take a short scenario-based test and get a stunning, shareable report of your personality.",
   },
 };
 

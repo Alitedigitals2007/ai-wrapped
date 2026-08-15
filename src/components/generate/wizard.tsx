@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { WRAPPED_FEATURE_NAME } from "@/lib/brand";
 
 const LOADING_MESSAGES = [
   "Analyzing personality...",
@@ -271,7 +272,7 @@ function StepResponse() {
             onClick={() => setStep(4)}
             className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-cyan-400"
           >
-            <Sparkles className="mr-2 size-4" /> Generate My Wrapped
+            <Sparkles className="mr-2 size-4" /> Generate My {WRAPPED_FEATURE_NAME}
           </Button>
         </div>
       </div>
@@ -371,7 +372,7 @@ export default function GenerateClient() {
             <ThemeToggle />
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Generate your <span className="text-gradient">Wrapped</span>
+            Generate your <span className="text-gradient">{WRAPPED_FEATURE_NAME}</span>
           </h1>
           <div className="mt-6 flex items-center justify-center gap-1.5">
             {[0, 1, 2, 3].map((i) => (

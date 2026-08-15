@@ -6,22 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toPng, toBlob } from "html-to-image";
 import { toast } from "sonner";
-import type { Analysis } from "@/lib/analysis/types";
-import { AI_EMOJI } from "@/lib/analysis/prompt";
-import {
-  WelcomeCard,
-  PersonalityCard,
-  ThinkingCard,
-  ScoresCard,
-  CommunicationCard,
-  InterestsCard,
-  StrengthsCard,
-  FunFactsCard,
-  AchievementsCard,
-  CareerCard,
-  PredictionsCard,
-  CardShell,
-} from "./cards";
+import type { PersonalityReport } from "@/lib/personality/types";
+import { CardShell, CardLabel } from "@/components/wrapped/cards";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
@@ -38,78 +24,268 @@ import {
   ChevronRight,
   Download,
   Share2,
-  RefreshCw,
   Swords,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { APP_NAME, WRAPPED_FEATURE_NAME } from "@/lib/brand";
 
-interface ViewerProps {
-  id: string;
-  code?: string | null;
-  username: string;
-  aiUsed: string;
-  aiEmoji: string;
-  analysis: Analysis;
+interface Props {
+  code: string | null;
+  name: string;
+  report: PersonalityReport;
+  engine: string | null;
 }
 
 const CARD_TITLES = [
   "Welcome",
-  "Personality",
-  "Thinking Style",
-  "Scores",
-  "Communication",
-  "Interests",
+  "Your Personality",
+  "Dimensions",
   "Strengths",
-  "Fun Facts",
-  "Achievements",
-  "Career",
-  "Predictions",
-  "Your Share Card",
+  "Blind Spot",
+  "Your Styles",
+  "Career Directions",
+  "Fun Fact",
+  "Your Report Card",
 ];
 
-function EngineBadge({ engine }: { engine?: string }) {
+function EngineBadge({ engine }: { engine: string | null }) {
   if (engine === "groq")
     return (
-      <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-white/60">
-        ⚡ Analyzed with Groq
+      <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-white/60">
+        ⚡ Report written with Groq
       </p>
     );
   if (engine === "openai")
     return (
-      <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-white/60">
-        ✦ Analyzed with OpenAI
+      <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-white/60">
+        ✦ Report written with OpenAI
       </p>
     );
   return (
     <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-white/60">
-      ⚙️ Local analysis mode
+      ⚙️ Built with our local analyzer
     </p>
   );
 }
 
-function ShareCardView({
-  username,
-  aiUsed,
-  analysis,
+function WelcomeCard({ name, report }: { name: string; report: PersonalityReport }) {
+  return (
+    <CardShell theme="welcome">
+      <div className="my-auto text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mx-auto size-24 grid place-items-center rounded-3xl bg-white/15 backdrop-blur-sm text-5xl shadow-2xl shadow-black/30 border border-white/30"
+        >
+          🧠
+        </motion.div>
+        <p className="mt-8 text-sm uppercase tracking-[0.3em] text-white/60">
+          Personality Report presents
+        </p>
+        <h1 className="mt-3 font-display text-5xl md:text-7xl font-bold tracking-tight text-gradient-bright">
+          {name}
+        </h1>
+        <p className="mt-4 text-white/70">{report.archetype}</p>
+      </div>
+    </CardShell>
+  );
+}
+
+function PersonalityCard({ report }: { report: PersonalityReport }) {
+  return (
+    <CardShell theme="personality">
+      <CardLabel>Your Personality</CardLabel>
+      <div className="mt-2">
+        <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight">
+          The <span className="text-gradient-bright">{report.archetype}</span>
+        </h2>
+        <p className="mt-3 text-white/70 italic">“{report.tagline}”</p>
+      </div>
+      <p className="mt-auto pt-8 text-white/85 leading-relaxed">{report.summary}</p>
+    </CardShell>
+  );
+}
+
+function DimensionsCard({ report }: { report: PersonalityReport }) {
+  const top = report.highlights.slice(0, 6);
+  return (
+    <CardShell theme="scores">
+      <CardLabel>Your Dimension Scores</CardLabel>
+      <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
+        Measured across <span className="text-gradient-bright">15 traits</span>
+      </h2>
+      <div className="mt-8 space-y-4">
+        {top.map((h, i) => (
+          <div key={h.key}>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-white/60">
+                {h.emoji} {h.label}
+              </span>
+              <span className="font-semibold">{h.score}</span>
+            </div>
+            <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-white to-cyan-200"
+                initial={{ width: 0 }}
+                animate={{ width: `${h.score}%` }}
+                transition={{ duration: 0.9, delay: 0.1 + i * 0.06, ease: "easeOut" }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-6 text-xs text-white/55 leading-relaxed">
+        {report.highlights[0]?.description}
+      </p>
+    </CardShell>
+  );
+}
+
+function StrengthsCard({ report }: { report: PersonalityReport }) {
+  return (
+    <CardShell theme="strengths">
+      <CardLabel>Strengths & Growth</CardLabel>
+      <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
+        Your <span className="text-gradient-bright">edge</span>
+      </h2>
+      <div className="mt-8 space-y-3">
+        {report.strengths.map((s, i) => (
+          <motion.div
+            key={s}
+            initial={{ opacity: 0, x: -24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.12 + i * 0.08 }}
+            className="flex items-center gap-4 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
+          >
+            <span className="font-display text-2xl font-bold text-white/30">{i + 1}</span>
+            <span className="font-semibold text-lg">{s}</span>
+          </motion.div>
+        ))}
+      </div>
+      <div className="mt-8">
+        <div className="text-xs uppercase tracking-wider text-white/55 mb-3">Growth Areas</div>
+        <div className="flex flex-wrap gap-2">
+          {report.growthAreas.map((g) => (
+            <span
+              key={g}
+              className="rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-sm font-medium backdrop-blur-sm"
+            >
+              {g}
+            </span>
+          ))}
+        </div>
+      </div>
+    </CardShell>
+  );
+}
+
+function BlindSpotCard({ report }: { report: PersonalityReport }) {
+  return (
+    <CardShell theme="thinking">
+      <CardLabel>Possible Blind Spot</CardLabel>
+      <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
+        Worth <span className="text-gradient-bright">noticing</span>
+      </h2>
+      <div className="mt-auto pt-10 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm">
+        <p className="text-white/85 text-lg leading-relaxed italic">“{report.blindSpot}”</p>
+      </div>
+    </CardShell>
+  );
+}
+
+function StylesCard({ report }: { report: PersonalityReport }) {
+  const rows: [string, string][] = [
+    ["Social Energy", report.styles.social],
+    ["Decision Style", report.styles.decision],
+    ["Conflict Style", report.styles.conflict],
+    ["What Drives You", report.styles.values],
+  ];
+  return (
+    <CardShell theme="communication">
+      <CardLabel>How You Show Up</CardLabel>
+      <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
+        Your <span className="text-gradient-bright">styles</span>
+      </h2>
+      <div className="mt-8 space-y-3">
+        {rows.map(([label, value], i) => (
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 + i * 0.08 }}
+            className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
+          >
+            <div className="text-xs uppercase tracking-wider text-white/55">{label}</div>
+            <div className="mt-1 text-sm font-medium leading-snug text-white/90">{value}</div>
+          </motion.div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function CareersCard({ report }: { report: PersonalityReport }) {
+  return (
+    <CardShell theme="career">
+      <CardLabel>Career Directions</CardLabel>
+      <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
+        Built for <span className="text-gradient-bright">this</span>
+      </h2>
+      <div className="mt-8 space-y-3">
+        {report.careers.map((c, i) => (
+          <motion.div
+            key={c}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.12 + i * 0.08 }}
+            className="flex items-center gap-4 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
+          >
+            <span className="text-2xl">{["🥇", "🥈", "🥉", "🔹", "🔹"][i] ?? "🔹"}</span>
+            <span className="font-display text-lg font-bold">{c}</span>
+          </motion.div>
+        ))}
+      </div>
+      <p className="mt-auto pt-8 text-xs text-white/55">
+        Directions are suggestions based on your pattern of answers — not a verdict.
+      </p>
+    </CardShell>
+  );
+}
+
+function FunFactCard({ report }: { report: PersonalityReport }) {
+  return (
+    <CardShell theme="fun">
+      <CardLabel>Fun Fact</CardLabel>
+      <h2 className="mt-2 font-display text-4xl md:text-5xl font-bold">
+        Just for <span className="text-gradient-bright">fun</span>
+      </h2>
+      <div className="mt-auto pt-10">
+        <p className="text-white/85 text-xl leading-relaxed">{report.funFact}</p>
+      </div>
+    </CardShell>
+  );
+}
+
+function ReportShareCard({
+  name,
+  report,
   code,
+  engine,
 }: {
-  username: string;
-  aiUsed: string;
-  analysis: Analysis;
-  code?: string | null;
+  name: string;
+  report: PersonalityReport;
+  code: string | null;
+  engine: string | null;
 }) {
-  const a = analysis;
   return (
     <CardShell theme="share">
       <div className="my-auto text-center">
-        <p className="text-xs uppercase tracking-[0.3em] text-white/60">Your 2026 {WRAPPED_FEATURE_NAME}</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-white/60">Personality Report</p>
         <h2 className="mt-2 font-display text-5xl md:text-6xl font-bold text-gradient-bright">
-          {username}
+          {name}
         </h2>
-        <p className="mt-2 text-white/70">
-          {AI_EMOJI[aiUsed] ?? "🤖"} {aiUsed}
-        </p>
+        <p className="mt-2 text-white/70">{report.archetype}</p>
 
         {code && (
           <div className="mt-5 inline-flex items-center gap-3 rounded-full border border-white/30 bg-white/15 px-5 py-2.5 backdrop-blur-sm">
@@ -119,51 +295,44 @@ function ShareCardView({
         )}
 
         <div className="mt-6 grid grid-cols-2 gap-3 text-left">
-          {[
-            ["AI Personality", a.personality.personalityType],
-            ["Top Strength", a.strengths[0] ?? "—"],
-            ["Top Interest", a.interests.topTopics[0] ?? "—"],
-            ["Best Badge", a.achievements[0] ?? "—"],
-          ].map(([label, value]) => (
+          {report.highlights.slice(0, 4).map((h) => (
             <div
-              key={label}
+              key={h.key}
               className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm"
             >
-              <div className="text-[11px] uppercase tracking-wider text-white/55">{label}</div>
-              <div className="mt-1 font-semibold text-sm leading-snug">{value}</div>
+              <div className="text-[11px] uppercase tracking-wider text-white/55">
+                {h.emoji} {h.label}
+              </div>
+              <div className="mt-1 font-display text-2xl font-bold">{h.score}</div>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-white/25 bg-black/30 px-6 py-3 backdrop-blur-sm">
-          <span className="text-xs uppercase tracking-wider text-white/60">Overall</span>
-          <span className="font-display text-3xl font-bold text-gradient-bright">{a.scores.overall}</span>
-          <span className="text-xs text-white/60">/100</span>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {report.strengths.slice(0, 3).map((s) => (
+            <span
+              key={s}
+              className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm"
+            >
+              {s}
+            </span>
+          ))}
         </div>
 
-        <EngineBadge engine={a.profile.engine} />
+        <EngineBadge engine={engine} />
 
         <p className="mt-6 text-[11px] uppercase tracking-[0.25em] text-white/60">
-          Generated by {APP_NAME}
+          Generated by Personality Report
         </p>
         <p className="mt-2 text-[11px] uppercase tracking-[0.25em] text-white/50">
-          Built by Alite ·{" "}
-          <a
-            href="https://wa.me/2349154681851?text=Well%20done%20on%20AI%20Wrapped%2C%20Alite!"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-emerald-300/90 hover:text-emerald-200 transition-colors normal-case tracking-normal"
-          >
-            Say hi on WhatsApp 💬
-          </a>
+          Built by Alite
         </p>
       </div>
     </CardShell>
   );
 }
 
-export default function WrappedViewer(props: ViewerProps) {
-  const { id, code, username, aiUsed, aiEmoji, analysis } = props;
+export default function ReportViewer({ code, name, report, engine }: Props) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
   const [busy, setBusy] = useState<"download" | "share" | null>(null);
@@ -171,24 +340,21 @@ export default function WrappedViewer(props: ViewerProps) {
   const [friendCode, setFriendCode] = useState("");
   const cardRef = useRef<HTMLDivElement>(null);
   const tapDownRef = useRef<{ x: number; y: number } | null>(null);
-  const total = 12;
+  const total = 9;
 
   const captions = useMemo(() => {
     return [
-      `${username}'s ${WRAPPED_FEATURE_NAME} — discover how AI sees you ✨`,
-      `My AI personality is ${analysis.personality.personalityType} (${analysis.personality.aiArchetype})`,
-      `My thinking style: ${analysis.personality.thinkingStyle} — how I think, per ${APP_NAME}`,
-      `My AI Power Level: ${analysis.scores.overall}/100 🚀`,
-      `My AI voiceprint: I mostly say "${analysis.language.mostUsedWord}"`,
-      `I'm into ${analysis.interests.topTopics.slice(0, 3).join(", ")}`,
-      `My top strength: ${analysis.strengths[0] ?? "Curiosity"} 💪`,
-      `Fun fact about me: ${analysis.fun.funniestInsight}`,
-      `Badges I unlocked: ${analysis.achievements.slice(0, 3).join(", ")} 🏅`,
-      `Best career match for me: ${analysis.career.topMatch}`,
-      `My next skill: ${analysis.prediction.nextSkill} 🚀`,
-      `My AI personality is ${analysis.personality.personalityType} with an overall score of ${analysis.scores.overall}. Discover how AI sees you`,
+      `${name}'s Personality Report — discover how you tick 🧠`,
+      `My personality archetype: ${report.archetype}`,
+      `My top dimension scores: ${report.highlights.slice(0, 3).map((h) => `${h.label} ${h.score}`).join(", ")}`,
+      `My top strengths: ${report.strengths.slice(0, 3).join(", ")} 💪`,
+      `My blind spot: ${report.blindSpot}`,
+      `How I show up: ${report.styles.social}`,
+      `Careers that fit me: ${report.careers.slice(0, 3).join(", ")}`,
+      `Fun fact: ${report.funFact}`,
+      `My personality archetype is ${report.archetype}. Take the test and compare!`,
     ];
-  }, [analysis, username]);
+  }, [name, report]);
 
   const next = useCallback(() => setIndex((i) => Math.min(i + 1, total - 1)), [total]);
   const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
@@ -220,21 +386,15 @@ export default function WrappedViewer(props: ViewerProps) {
   }, [next, prev]);
 
   const fileName = useMemo(() => {
-    const slug = CARD_TITLES[index]
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-    return `${username.toLowerCase().replace(/\s+/g, "-")}-${slug}.png`;
-  }, [index, username]);
+    const slug = CARD_TITLES[index].toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    return `${name.toLowerCase().replace(/\s+/g, "-")}-${slug}.png`;
+  }, [index, name]);
 
   const downloadPng = async () => {
     if (!cardRef.current) return;
     setBusy("download");
     try {
-      const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: 2,
-        cacheBust: true,
-      });
+      const dataUrl = await toPng(cardRef.current, { pixelRatio: 2, cacheBust: true });
       const link = document.createElement("a");
       link.download = fileName;
       link.href = dataUrl;
@@ -251,16 +411,13 @@ export default function WrappedViewer(props: ViewerProps) {
     if (!cardRef.current) return;
     setBusy("share");
     try {
-      const blob = await toBlob(cardRef.current, {
-        pixelRatio: 2,
-        cacheBust: true,
-      });
+      const blob = await toBlob(cardRef.current, { pixelRatio: 2, cacheBust: true });
       if (!blob) throw new Error("no blob");
       const file = new File([blob], fileName, { type: "image/png" });
       const caption = captions[index];
       if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: `${username}'s ${WRAPPED_FEATURE_NAME}`, text: caption });
+          await navigator.share({ files: [file], title: `${name}'s Personality Report`, text: caption });
           return;
         } catch {
           /* user cancelled */
@@ -285,11 +442,11 @@ export default function WrappedViewer(props: ViewerProps) {
   };
 
   const shareLink = async () => {
-    const url = `${window.location.origin}/wrapped/${id}`;
+    const url = `${window.location.origin}/report/${code}`;
     const text = `${captions[total - 1]} → ${url}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: `${username}'s ${WRAPPED_FEATURE_NAME}`, text, url });
+        await navigator.share({ title: `${name}'s Personality Report`, text, url });
         return;
       } catch {
         /* user cancelled */
@@ -309,7 +466,7 @@ export default function WrappedViewer(props: ViewerProps) {
     try {
       const res = await fetch(`/api/lookup?code=${encodeURIComponent(fc)}`);
       if (res.status === 404) {
-        toast.error(`No wrap found with code "${fc}". Double-check it.`);
+        toast.error(`No report found with code "${fc}". Double-check it.`);
         return;
       }
       if (!res.ok) throw new Error("lookup failed");
@@ -321,18 +478,15 @@ export default function WrappedViewer(props: ViewerProps) {
   };
 
   const cards = [
-    <WelcomeCard key="w" username={username} aiUsed={aiUsed} aiEmoji={aiEmoji} date={new Date().getFullYear().toString()} />,
-    <PersonalityCard key="p" analysis={analysis} />,
-    <ThinkingCard key="t" analysis={analysis} />,
-    <ScoresCard key="s" analysis={analysis} />,
-    <CommunicationCard key="c" analysis={analysis} />,
-    <InterestsCard key="i" analysis={analysis} />,
-    <StrengthsCard key="st" analysis={analysis} />,
-    <FunFactsCard key="f" analysis={analysis} />,
-    <AchievementsCard key="a" analysis={analysis} />,
-    <CareerCard key="ca" analysis={analysis} />,
-    <PredictionsCard key="pr" analysis={analysis} />,
-    <ShareCardView key="share" username={username} aiUsed={aiUsed} analysis={analysis} code={code} />,
+    <WelcomeCard key="w" name={name} report={report} />,
+    <PersonalityCard key="p" report={report} />,
+    <DimensionsCard key="d" report={report} />,
+    <StrengthsCard key="s" report={report} />,
+    <BlindSpotCard key="b" report={report} />,
+    <StylesCard key="st" report={report} />,
+    <CareersCard key="c" report={report} />,
+    <FunFactCard key="f" report={report} />,
+    <ReportShareCard key="share" name={name} report={report} code={code} engine={engine} />,
   ];
 
   return (
@@ -345,7 +499,7 @@ export default function WrappedViewer(props: ViewerProps) {
       <header className="fixed top-0 inset-x-0 z-40 px-4 pt-4">
         <div className="mx-auto max-w-5xl glass rounded-full px-4 py-2.5 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 font-display font-bold text-sm shrink-0">
-            🪄 {APP_NAME}
+            🧠 Personality Report
           </Link>
           <div className="hidden sm:flex flex-1 justify-center gap-1.5">
             {CARD_TITLES.map((t, i) => (
@@ -355,7 +509,9 @@ export default function WrappedViewer(props: ViewerProps) {
                 onClick={() => setIndex(i)}
                 className={cn(
                   "h-1.5 rounded-full transition-all",
-                  i === index ? "w-6 bg-gradient-to-r from-violet-500 to-fuchsia-500 dark:from-violet-400 dark:to-fuchsia-400" : "w-2 bg-black/15 dark:bg-white/15 hover:bg-black/30 dark:hover:bg-white/30"
+                  i === index
+                    ? "w-6 bg-gradient-to-r from-violet-500 to-fuchsia-500 dark:from-violet-400 dark:to-fuchsia-400"
+                    : "w-2 bg-black/15 dark:bg-white/15 hover:bg-black/30 dark:hover:bg-white/30"
                 )}
               />
             ))}
@@ -420,8 +576,8 @@ export default function WrappedViewer(props: ViewerProps) {
                     <Button size="sm" variant="outline" onClick={() => setCompareOpen(true)} disabled={!code}>
                       <Swords className="mr-1.5 size-4" /> Compare
                     </Button>
-                    <Button size="sm" variant="ghost" render={<Link href="/generate" />}>
-                      <RefreshCw className="mr-1.5 size-4" /> Generate Again
+                    <Button size="sm" variant="ghost" render={<Link href="/personality" />}>
+                      <RefreshCw className="mr-1.5 size-4" /> Take Again
                     </Button>
                   </div>
                 ) : (
@@ -470,7 +626,7 @@ export default function WrappedViewer(props: ViewerProps) {
           <DialogHeader>
             <DialogTitle>Compare with a friend 🥊</DialogTitle>
             <DialogDescription>
-              Ask your friend for their {WRAPPED_FEATURE_NAME} code and paste it below. Your code:{" "}
+              Ask your friend for their report code and paste it below. Your code:{" "}
               <span className="inline-flex items-center gap-1 font-mono font-bold text-foreground">
                 {code ?? "—"}
               </span>

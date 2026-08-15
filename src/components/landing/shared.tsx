@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { APP_NAME } from "@/lib/brand";
 
 export function Reveal({
   children,
@@ -43,9 +44,9 @@ export function Navbar() {
         <div className="mt-4 glass rounded-full px-5 py-3 flex items-center justify-between gap-2">
           <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight shrink-0">
             <span className="grid place-items-center size-8 rounded-full bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 text-white text-base">
-              🪄
+              🧠
             </span>
-            AI Wrapped
+            {APP_NAME}
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             {links.map((l) => (
@@ -62,10 +63,10 @@ export function Navbar() {
           <div className="flex items-center gap-2 shrink-0">
             <ThemeToggle />
             <Link
-              href="/generate"
+              href="/personality"
               className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-sm font-semibold px-4 py-2 transition-all hover:shadow-lg hover:shadow-fuchsia-500/25"
             >
-              Generate My Wrapped
+              Test my personality
             </Link>
             <button
               onClick={() => setOpen((o) => !o)}
@@ -97,11 +98,18 @@ export function Navbar() {
                 </a>
               ))}
               <Link
-                href="/generate"
+                href="/personality"
                 onClick={() => setOpen(false)}
                 className="mt-1 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-center text-sm font-semibold px-4 py-3 hover:from-violet-500 hover:to-fuchsia-500 transition-colors"
               >
-                Generate My Wrapped ✨
+                Test my personality ✨
+              </Link>
+              <Link
+                href="/generate"
+                onClick={() => setOpen(false)}
+                className="rounded-2xl border border-black/10 dark:border-white/10 px-4 py-3 text-sm font-medium text-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              >
+                Generate an AI Wrap 🤖
               </Link>
             </motion.nav>
           )}

@@ -2,32 +2,33 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { APP_NAME } from "@/lib/brand";
 
 const steps = [
   {
     emoji: "👤",
-    title: "Enter your username",
-    text: "Tell us what to call you. No account, no email, no signup.",
+    title: "Enter your name",
+    text: "No account, no email, no signup. Just a display name.",
   },
   {
-    emoji: "🤖",
-    title: "Pick your AI",
-    text: "Choose the AI you chat with most — ChatGPT, Gemini, Claude and more.",
+    emoji: "🎯",
+    title: "Answer scenarios",
+    text: "A few short situations — what you'd do, why, what you value.",
   },
   {
-    emoji: "📋",
-    title: "Copy our magic prompt",
-    text: "We craft a perfectly engineered prompt. Paste it into your AI.",
-  },
-  {
-    emoji: "📥",
-    title: "Paste its answer back",
-    text: "Copy your AI's response and drop it here. We do the rest.",
+    emoji: "🧬",
+    title: "Get 15 dimensions",
+    text: "Extraversion to risk tolerance, measured from your choices.",
   },
   {
     emoji: "✨",
-    title: "Get your Wrapped",
-    text: "A gorgeous, animated breakdown of your AI personality. Share it.",
+    title: "AI writes your report",
+    text: "A warm, human narrative of your personality — not just labels.",
+  },
+  {
+    emoji: "🔗",
+    title: "Share & compare",
+    text: "A public link, a PNG card, and head-to-head battles by code.",
   },
 ];
 
@@ -41,7 +42,7 @@ export function Hero() {
           transition={{ duration: 0.7 }}
         >
           <span className="glass rounded-full px-4 py-1.5 text-sm text-muted-foreground">
-            🎧 Your AI personality, wrapped in style
+            🧠 Your personality, wrapped in style
           </span>
         </motion.div>
 
@@ -51,7 +52,9 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
         >
-          Discover how <span className="text-gradient">AI sees you.</span>
+          Know <span className="text-gradient">yourself.</span>
+          <br />
+          Share it.
         </motion.h1>
 
         <motion.p
@@ -60,9 +63,9 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
-          AI Wrapped turns your AI conversations into a beautiful, shareable
-          Spotify Wrapped-style experience. Your personality, scores,
-          interests and predictions — in under 3 minutes.
+          {APP_NAME} turns a short scenario-based test into a beautiful, shareable
+          personality report — 15 dimensions, AI-written insights, and a public
+          link anyone can open. In under 4 minutes.
         </motion.p>
 
         <motion.div
@@ -72,10 +75,10 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.3 }}
         >
           <Link
-            href="/generate"
+            href="/personality"
             className="rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
           >
-            Generate My Wrapped ✨
+            Test my personality ✨
           </Link>
           <a
             href="#how"
@@ -109,8 +112,7 @@ export function HowItWorks() {
           How it <span className="text-gradient">works</span>
         </h2>
         <p className="mt-4 text-center text-muted-foreground max-w-xl mx-auto">
-          Five tiny steps. That&apos;s all it takes to see yourself through the
-          eyes of AI.
+          Four tiny steps. That&apos;s all it takes to see yourself clearly.
         </p>
         <div className="mt-14 grid gap-6 md:grid-cols-3 lg:grid-cols-5">
           {steps.map((step, i) => (

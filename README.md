@@ -2,76 +2,60 @@
 
 **"Know yourself. Share it."**
 
-Aura is a free, no-account web app where you learn about yourself — and have fun with friends. Three ways to play:
+Aura is a free, no-account web app where you learn about yourself — and have fun with friends.
+
+## How to Use Aura
+
+Just visit the app and start playing — no signup, no email needed.
+
+### 1. Personality Test
+Go to `/personality` to answer ~15 short scenario questions about what you'd do in real situations. Get a beautiful, AI-written personality report with:
+- 15 dimension scores (extraversion, risk tolerance, empathy, ambition, etc.)
+- Your archetype (e.g., "The Strategist", "The Caregiver")
+- Personalized strengths and blind spots
+- A shareable link and downloadable PNG cards
+Takes about 3 minutes. Just enter a name to begin.
+
+### 2. "Who Knows Me Best?" Quiz
+Create a quiz about yourself at `/quiz`:
+- Write your own questions or pick a ready-made pack (Couple, Best Friend, Family, Squad, Work Buddy)
+- Mark the answers that are true about you
+- Get a unique 6-character code to share with friends
+Friends use your code to guess your answers → they get an instant score and a fun verdict (e.g., "You know Alite scary well 👑")
+Watch the live leaderboard as they play — highest score wins.
+Takes about 1 minute to create.
+
+### 3. Daily Question
+Visit `/daily` for a new question every day. Pick your answer → get an instant personality insight + shareable result. Come back tomorrow for a fresh one. Takes 10 seconds.
+
+### 4. AI Wrapped
+At `/generate`, paste your AI chat history (from ChatGPT, Claude, etc.) and get a Spotify Wrapped–style animated story showing:
+- Your personality traits from the conversations
+- Skill scores and career matches
+- Predictions and insights
+- 12 shareable cards to download or post
+Works instantly — just paste and generate.
+
+### 5. Financial Intelligence (FinSight)
+Upload your OPay transaction statement (Excel/CSV) to get a deep dive into your money habits. FinSight breaks down your finances into:
+- **Wallet Analysis**: See your main spending account's money in, money out, transaction count, and current balance.
+- **Savings Analysis**: Track your OPay savings growth with similar inflow, outflow, and balance metrics.
+- **Combined Overview** (optional): View total activity across all your OPay accounts in one place.
+
+Get instant insights into your cash flow, spending patterns, and financial health—all in easy-to-understand cards and charts. Takes less than a minute to upload and analyze.
+
+### 6. Compare Reports
+Have fun comparing with friends! At `/compare`, enter two shareable codes (from Personality Tests or AI Wraps) to see a side-by-side battle of your traits, scores, and archetypes.
+
+## Why People Love Aura
+
+- **Zero commitment**: No accounts, no emails, no passwords. Your identity is just the name you enter.
+- **Blazing fast**: Personality test ~3 min, quiz ~1 min, daily question ~10 sec.
+- **Beautiful & shareable**: Get stunning PNG cards and links to show off your results.
+- **Totally private**: Your data lives only in the shareable links you create — nothing is stored unless you share it.
+- **Made for connection**: Designed to spark conversations and laughter with friends, partners, or teammates.
 
 ---
 
-### 1. Personality Test  →  `/personality`
-Answer ~15 short scenario questions (what you'd do in real situations). Get a beautiful, AI-written personality report with **15 dimension scores** (extraversion, risk tolerance, empathy, ambition…), an archetype, strengths, blind spots, and a shareable link + PNG cards. No signup — just enter a name.
-
-### 2. "Who Knows Me Best?" Quiz  →  `/quiz`
-**Create a quiz about yourself.** Write your own questions (or pick a ready-made pack: Couple, Best Friend, Family, Squad, Work Buddy), mark the answers true about you, get a **6-character code**. Send the code to friends. They guess your answers → instant score + fun verdict ("You know Alite scary well 👑") → live leaderboard. Highest score wins.
-
-### 3. Daily Question  →  `/daily`
-One new question every day. Pick your answer → instant personality read + share. Come back tomorrow for a fresh one. Takes 10 seconds.
-
-### 4. AI Wrapped  →  `/generate`
-Paste your AI chat history and get a Spotify Wrapped–style animated story: personality, skill scores, career matches, predictions, and 12 shareable cards.
-
----
-
-## What makes it different
-- **No accounts, no email** — just a name. Your data lives in a shareable link.
-- **Works instantly** — personality test ~3 min, quiz ~1 min, daily ~10 sec.
-- **Mobile-first, beautiful** — dark/light mode, animated cards, PNG downloads.
-- **Compare anything** — battle two personality reports or two AI Wraps head-to-head by code.
-
----
-
-## Quick links
-| Feature | URL |
-|---|---|
-| Personality Test | `/personality` |
-| Create a Quiz | `/quiz` |
-| Play a Quiz Pack | `/quiz/pack` |
-| Daily Question | `/daily` |
-| AI Wrapped | `/generate` |
-| Compare by Code | `/compare` |
-| Admin Dashboard | `/admin/login` |
-
----
-
-## Tech (for developers)
-Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Prisma (PostgreSQL/Neon) · Framer Motion · Groq (free LLM) with local fallback.
-
-### Run locally
-```bash
-npm install
-cp .env.example .env   # fill in DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET
-npm run db:push        # creates tables (use CI=true if it hangs)
-npm run dev            # http://localhost:3000
-```
-
-### Env vars
-| Variable | Required | Purpose |
-|---|---|---|
-| `DATABASE_URL` | ✅ | Neon PostgreSQL connection string |
-| `ADMIN_PASSWORD` | ✅ | Admin dashboard login |
-| `SESSION_SECRET` | ✅ | Random string for admin sessions |
-| `GROQ_API_KEY` | Optional | Real AI reports (free at console.groq.com). Empty = local fallback. |
-| `GROQ_MODEL` | Optional | Default: `llama-3.3-70b-versatile` |
-| `NEXT_PUBLIC_APP_URL` | Optional | Base URL for share links |
-
----
-
-## Deploy to Vercel
-1. Push to GitHub → import in Vercel.
-2. Add env vars (Production): `DATABASE_URL`, `GROQ_API_KEY`, `ADMIN_PASSWORD`, `SESSION_SECRET`, `NEXT_PUBLIC_APP_URL`.
-3. Deploy. Run `npm run db:push` once after first deploy to create tables.
-
----
-
-## Security
-- `.env` is **gitignored** — never commit it. Only `.env.example` is tracked.
-- Admin uses signed cookies (`secure: true` in production).
-- No user emails or passwords stored.
+*Built with Next.js, TypeScript, and Tailwind. Hosted on Vercel.*  
+*Questions? Reach out — we’d love to hear how you’re using Aura.*

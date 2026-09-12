@@ -10,6 +10,7 @@ export interface NormalizedTransaction {
   channel?: string;
   reference?: string;
   valueDate?: Date;
+  providedCategory?: string;
 }
 
 export interface ProcessedStatement {
@@ -229,7 +230,16 @@ function detectTransactionSheets(workbook: XLSX.WorkBook): string[] {
         if (val === null || val === undefined) return false;
         const str = String(val).trim();
         return str === "--" || /^[\d,]+\.?\d*$/.test(str.replace(/,/g, ""));
-      };
+};
+
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
       
       const hasMoneyCols = looksLikeAmount(firstRow[3]) || looksLikeAmount(firstRow[4]) || looksLikeAmount(secondRow[3]) || looksLikeAmount(secondRow[4]);
       const hasDesc = typeof firstRow[2] === "string" && firstRow[2].trim().length > 5;
@@ -260,6 +270,7 @@ function extractTransactions(sheet: XLSX.WorkSheet): NormalizedTransaction[] {
   let balanceCol = 5;
   let channelCol = 6;
   let referenceCol = 7;
+  let categoryCol = -1;
   
   if (!isHeaderless) {
     // Header-based extraction
@@ -271,6 +282,7 @@ function extractTransactions(sheet: XLSX.WorkSheet): NormalizedTransaction[] {
     const balanceIdx = findColumn(headers, "balance");
     const referenceIdx = findColumn(headers, "reference");
     const channelIdx = findColumn(headers, "channel");
+    const categoryIdx = findColumn(headers, "category");
     
     if (dateIdx < 0 || descIdx < 0) return [];
     
@@ -281,6 +293,7 @@ function extractTransactions(sheet: XLSX.WorkSheet): NormalizedTransaction[] {
     balanceCol = balanceIdx >= 0 ? balanceIdx : -1;
     referenceCol = referenceIdx >= 0 ? referenceIdx : -1;
     channelCol = channelIdx >= 0 ? channelIdx : -1;
+    categoryCol = categoryIdx >= 0 ? categoryIdx : -1;
   }
   
   const transactions: NormalizedTransaction[] = [];
@@ -307,6 +320,7 @@ function extractTransactions(sheet: XLSX.WorkSheet): NormalizedTransaction[] {
       balance: balanceCol >= 0 ? parseAmount(row[balanceCol]) : undefined,
       reference: referenceCol >= 0 ? String(row[referenceCol] || "").trim() : undefined,
       channel: channelCol >= 0 ? String(row[channelCol] || "").trim() : undefined,
+      providedCategory: categoryCol >= 0 ? String(row[categoryCol] || "").trim() : undefined,
     });
   }
   
@@ -361,7 +375,12 @@ function categorizeTransactions(transactions: NormalizedTransaction[]): Category
   const catMap = new Map<string, { debit: number; credit: number; count: number }>();
   
   for (const tx of transactions) {
-    const cat = categorize(tx.description);
+    let cat: string;
+    if (tx.providedCategory && tx.providedCategory.trim().length > 0) {
+      cat = tx.providedCategory.trim();
+    } else {
+      cat = categorize(tx.description);
+    }
     const existing = catMap.get(cat) || { debit: 0, credit: 0, count: 0 };
     existing.debit += tx.debit;
     existing.credit += tx.credit;
@@ -519,6 +538,36 @@ function detectPatterns(
     }
   }
   
+  // Largest single expense (highest gifter)
+  const largestDebitTx = transactions.reduce((max, tx) => (tx.debit > max.debit ? tx : max), { debit: -1, description: "" });
+  if (largestDebitTx.debit >= 0) {
+    insights.push({
+      type: "largest_expense",
+      severity: "info",
+      title: "Biggest Single Expense",
+      observation: `Your largest transaction was ${formatCurrency(largestDebitTx.debit)} to "${largestDebitTx.description}".`,
+      explanation: "This highlights your top spending event in the period.",
+      recommendation: "Review if this expense was expected or a one‑off.",
+      confidence: 90,
+    });
+  }
+  
+  // Healthy food / salad stuff
+  const healthyKeywords = ["salad", "vegetable", "fruit", "lettuce", "tomato", "cucumber", "broccoli", "spinach", "kale", "avocado", "berries"];
+  const healthyTx = transactions.filter(tx => tx.debit > 0 && healthyKeywords.some(k => tx.description.toLowerCase().includes(k)));
+  if (healthyTx.length > 0) {
+    const healthyTotal = healthyTx.reduce((sum, tx) => sum + tx.debit, 0);
+    insights.push({
+      type: "healthy_eating",
+      severity: "info",
+      title: "Healthy Eating Detected",
+      observation: `You made ${healthyTx.length} healthy food purchase${healthyTx.length === 1 ? "" : "s"} (salad, veggies, fruit) totaling ${formatCurrency(healthyTotal)}.`,
+      explanation: "Choosing nutritious options contributes to long‑term wellbeing.",
+      recommendation: "Keep up the good work! Try to make healthy choices a regular habit.",
+      confidence: 85,
+    });
+  }
+  
   return insights;
 }
 
@@ -625,11 +674,3 @@ export async function processExcelFile(buffer: Buffer, filename: string): Promis
   };
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}

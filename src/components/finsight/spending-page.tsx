@@ -18,14 +18,15 @@ import { cn } from "@/lib/utils";
 
 interface SpendingPageProps {
   statement: {
-    transactions: Array<{
-      description: string;
-      debit: { toNumber(): number } | null;
-      credit: { toNumber(): number } | null;
-      category?: string | null;
+    categories: Array<{
+      category: string;
+      totalDebit: number;
+      totalCredit: number;
+      count: number;
+      percentage: number;
     }>;
-    totalCredit: { toNumber(): number } | null;
-    totalDebit: { toNumber(): number } | null;
+    totalCredit: number | null;
+    totalDebit: number | null;
   };
 }
 
@@ -35,56 +36,29 @@ const CATEGORY_COLORS = [
   "#eab308", "#a855f7", "#ef4444", "#0ea5e9", "#84cc16",
 ];
 
-function aggregateCategories(transactions: SpendingPageProps["statement"]["transactions"]) {
-  const debitMap = new Map<string, { debit: number; count: number }>();
-  const creditMap = new Map<string, { credit: number; count: number }>();
-  
-  for (const tx of transactions) {
-    const cat = tx.category || "Other";
-    const debitVal = tx.debit?.toNumber() || 0;
-    const creditVal = tx.credit?.toNumber() || 0;
-    if (debitVal > 0) {
-      const existing = debitMap.get(cat) || { debit: 0, count: 0 };
-      existing.debit += debitVal;
-      existing.count += 1;
-      debitMap.set(cat, existing);
-    }
-    if (creditVal > 0) {
-      const existing = creditMap.get(cat) || { credit: 0, count: 0 };
-      existing.credit += creditVal;
-      existing.count += 1;
-      creditMap.set(cat, existing);
-    }
-  }
-  
-  const totalDebit = Array.from(debitMap.values()).reduce((s, v) => s + v.debit, 0);
-  const totalCredit = Array.from(creditMap.values()).reduce((s, v) => s + v.credit, 0);
-  
-  const debitData = Array.from(debitMap.entries())
-    .map(([category, data]) => ({
-      category,
-      value: data.debit,
-      count: data.count,
-      percentage: totalDebit > 0 ? (data.debit / totalDebit) * 100 : 0,
-    }))
-    .sort((a, b) => b.value - a.value);
-  
-  const creditData = Array.from(creditMap.entries())
-    .map(([category, data]) => ({
-      category,
-      value: data.credit,
-      count: data.count,
-      percentage: totalCredit > 0 ? (data.credit / totalCredit) * 100 : 0,
-    }))
-    .sort((a, b) => b.value - a.value);
-  
-  return { debitData, creditData, totalDebit, totalCredit };
-}
-
-const { debitData, creditData, totalDebit, totalCredit } = aggregateCategories([]);
-
 export function SpendingPage({ statement }: SpendingPageProps) {
-  const { debitData, creditData, totalDebit, totalCredit } = aggregateCategories(statement.transactions);
+  const totalDebit = statement.categories.reduce((s, c) => s + c.totalDebit, 0);
+  const totalCredit = statement.categories.reduce((s, c) => s + c.totalCredit, 0);
+
+  const debitData = statement.categories
+    .filter((c) => c.totalDebit > 0)
+    .map((c) => ({
+      category: c.category,
+      value: c.totalDebit,
+      count: c.count,
+      percentage: totalDebit > 0 ? (c.totalDebit / totalDebit) * 100 : 0,
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  const creditData = statement.categories
+    .filter((c) => c.totalCredit > 0)
+    .map((c) => ({
+      category: c.category,
+      value: c.totalCredit,
+      count: c.count,
+      percentage: totalCredit > 0 ? (c.totalCredit / totalCredit) * 100 : 0,
+    }))
+    .sort((a, b) => b.value - a.value);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">

@@ -14,9 +14,9 @@ interface StatementNavProps {
     accountNumberMasked?: string | null;
     periodStart?: Date | null;
     periodEnd?: Date | null;
-    totalCredit: { toNumber(): number } | null;
-    totalDebit: { toNumber(): number } | null;
-    closingBalance: { toNumber(): number } | null;
+    totalCredit: number | null;
+    totalDebit: number | null;
+    closingBalance: number | null;
     uploadedAt: Date;
   };
 }
@@ -31,9 +31,9 @@ const NAV_ITEMS = [
 
 export function StatementNav({ statement }: StatementNavProps) {
   const pathname = usePathname();
-  const totalIn = statement.totalCredit?.toNumber() || 0;
-  const totalOut = statement.totalDebit?.toNumber() || 0;
-  const balance = statement.closingBalance?.toNumber() || 0;
+  const totalIn = statement.totalCredit ?? 0;
+  const totalOut = statement.totalDebit ?? 0;
+  const balance = statement.closingBalance ?? 0;
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-xl">

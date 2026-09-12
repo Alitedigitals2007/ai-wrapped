@@ -16,9 +16,9 @@ interface FinSightLandingProps {
     accountNumberMasked?: string | null;
     periodStart?: Date | null;
     periodEnd?: Date | null;
-    totalCredit: { toNumber(): number } | null;
-    totalDebit: { toNumber(): number } | null;
-    closingBalance: { toNumber(): number } | null;
+    totalCredit: number | null;
+    totalDebit: number | null;
+    closingBalance: number | null;
     uploadedAt: Date;
     uploadedFilename?: string | null;
     status: string;
@@ -137,10 +137,10 @@ export function FinSightLanding({ statements }: FinSightLandingProps) {
                       </div>
                       <div className="flex items-center gap-4 sm:ml-auto">
                         <div className="hidden sm:flex items-center gap-6 text-sm font-medium">
-                          <span className="text-emerald-600 dark:text-emerald-400">In: {formatCurrency(stmt.totalCredit?.toNumber() || 0)}</span>
-                          <span className="text-rose-600 dark:text-rose-400">Out: {formatCurrency(stmt.totalDebit?.toNumber() || 0)}</span>
-                          <span className={cn("font-semibold", (stmt.closingBalance?.toNumber() || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
-                            Bal: {formatCurrency(stmt.closingBalance?.toNumber() || 0)}
+                          <span className="text-emerald-600 dark:text-emerald-400">In: {formatCurrency(stmt.totalCredit ?? 0)}</span>
+                          <span className="text-rose-600 dark:text-rose-400">Out: {formatCurrency(stmt.totalDebit ?? 0)}</span>
+                          <span className={cn("font-semibold", (stmt.closingBalance ?? 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                            Bal: {formatCurrency(stmt.closingBalance ?? 0)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">

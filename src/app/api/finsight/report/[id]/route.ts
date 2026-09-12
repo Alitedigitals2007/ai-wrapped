@@ -13,13 +13,13 @@ export async function GET(
     return new Response("Statement not found", { status: 404 });
   }
 
-  const totalIn = statement.totalCredit?.toNumber() || 0;
-  const totalOut = statement.totalDebit?.toNumber() || 0;
+  const totalIn = statement.totalCredit ?? 0;
+  const totalOut = statement.totalDebit ?? 0;
   const netFlow = totalIn - totalOut;
-  const closingBal = statement.closingBalance?.toNumber() || 0;
+  const closingBal = statement.closingBalance ?? 0;
   const closingBalClass = closingBal >= 0 ? "positive" : "negative";
   const risk = statement.riskScore;
-  const overallScore = risk?.overallScore?.toNumber() || 0;
+  const overallScore = risk?.overallScore ?? 0;
 
   const html = `
 <!DOCTYPE html>
@@ -71,12 +71,12 @@ export async function GET(
   <div class="section">
     <h2>Risk Assessment</h2>
     <div class="grid">
-      <div class="card"><div class="label">Overall</div><div class="value">${Math.round(risk.overallScore.toNumber())}/100</div></div>
-      <div class="card"><div class="label">Liquidity</div><div class="value">${Math.round(risk.liquidityScore.toNumber())}/100</div></div>
-      <div class="card"><div class="label">Spending Concentration</div><div class="value">${Math.round(risk.spendingScore.toNumber())}/100</div></div>
-      <div class="card"><div class="label">Consistency</div><div class="value">${Math.round(risk.consistencyScore.toNumber())}/100</div></div>
-      <div class="card"><div class="label">Anomalies</div><div class="value">${Math.round(risk.anomalyScore.toNumber())}/100</div></div>
-      <div class="card"><div class="label">Balance Retention</div><div class="value">${Math.round(risk.concentrationScore.toNumber())}/100</div></div>
+      <div class="card"><div class="label">Overall</div><div class="value">${Math.round(risk.overallScore ?? 0)}/100</div></div>
+      <div class="card"><div class="label">Liquidity</div><div class="value">${Math.round(risk.liquidityScore ?? 0)}/100</div></div>
+      <div class="card"><div class="label">Spending Concentration</div><div class="value">${Math.round(risk.spendingScore ?? 0)}/100</div></div>
+      <div class="card"><div class="label">Consistency</div><div class="value">${Math.round(risk.consistencyScore ?? 0)}/100</div></div>
+      <div class="card"><div class="label">Anomalies</div><div class="value">${Math.round(risk.anomalyScore ?? 0)}/100</div></div>
+      <div class="card"><div class="label">Balance Retention</div><div class="value">${Math.round(risk.concentrationScore ?? 0)}/100</div></div>
     </div>
   </div>
   ` : ""}
@@ -91,11 +91,11 @@ export async function GET(
         ${statement.monthlyMetrics.map(m => `
           <tr>
             <td>${format(m.month, "MMM yyyy")}</td>
-            <td class="positive">${formatCurrency(m.totalCredit.toNumber())}</td>
-            <td class="negative">${formatCurrency(m.totalDebit.toNumber())}</td>
-            <td class="${m.netFlow.toNumber() >= 0 ? "positive" : "negative"}">${formatCurrency(m.netFlow.toNumber())}</td>
+            <td class="positive">${formatCurrency(m.totalCredit ?? 0)}</td>
+            <td class="negative">${formatCurrency(m.totalDebit ?? 0)}</td>
+            <td class="${(m.netFlow ?? 0) >= 0 ? "positive" : "negative"}">${formatCurrency(m.netFlow ?? 0)}</td>
             <td>${m.transactionCount}</td>
-            <td>${m.endingBalance ? formatCurrency(m.endingBalance.toNumber()) : "—"}</td>
+            <td>${m.endingBalance ? formatCurrency(m.endingBalance) : "—"}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -116,7 +116,7 @@ export async function GET(
               <td>${i.severity}</td>
               <td>${i.title}</td>
               <td>${i.observation}</td>
-              <td>${i.confidence ? i.confidence.toNumber().toFixed(0) + "%" : "—"}</td>
+              <td>${i.confidence ? i.confidence.toFixed(0) + "%" : "—"}</td>
             </tr>
           `).join("")}
         </tbody>

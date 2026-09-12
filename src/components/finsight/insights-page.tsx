@@ -12,19 +12,7 @@ interface InsightsPageProps {
       observation: string;
       explanation?: string | null;
       recommendation?: string | null;
-      confidence: { toNumber(): number } | null;
-    }>;
-    transactions: Array<{
-      description: string;
-      debit: { toNumber(): number };
-      credit: { toNumber(): number };
-      category?: string | null;
-    }>;
-    monthlyMetrics: Array<{
-      month: Date;
-      totalCredit: { toNumber(): number };
-      totalDebit: { toNumber(): number };
-      netFlow: { toNumber(): number };
+      confidence: number | null;
     }>;
   };
 }
@@ -128,7 +116,7 @@ function InsightCard({
   TypeIcon: typeof AlertCircle;
   config: { color: string; label: string; icon: typeof AlertCircle };
 }) {
-  const confidence = insight.confidence?.toNumber() || 0;
+  const confidence = insight.confidence ?? 0;
 
   return (
     <div className={cn("rounded-2xl p-5 border transition-all hover:shadow-lg", config.color)}>

@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils";
 interface RiskPageProps {
   statement: {
     riskScore: {
-      overallScore: { toNumber(): number };
-      liquidityScore: { toNumber(): number };
-      spendingScore: { toNumber(): number };
-      consistencyScore: { toNumber(): number };
-      anomalyScore: { toNumber(): number };
-      concentrationScore: { toNumber(): number };
+      overallScore: number | null;
+      liquidityScore: number | null;
+      spendingScore: number | null;
+      consistencyScore: number | null;
+      anomalyScore: number | null;
+      concentrationScore: number | null;
     } | null;
     insights: Array<{
       type: string;
@@ -23,16 +23,17 @@ interface RiskPageProps {
     }>;
     monthlyMetrics: Array<{
       month: Date;
-      totalCredit: { toNumber(): number } | null;
-      totalDebit: { toNumber(): number } | null;
-      netFlow: { toNumber(): number } | null;
-      endingBalance?: { toNumber(): number } | null;
+      totalCredit: number | null;
+      totalDebit: number | null;
+      netFlow: number | null;
+      endingBalance?: number | null;
     }>;
-    transactions: Array<{
-      description: string;
-      debit: { toNumber(): number };
-      credit: { toNumber(): number };
-      category?: string | null;
+    categories: Array<{
+      category: string;
+      totalDebit: number;
+      totalCredit: number;
+      count: number;
+      percentage: number;
     }>;
   };
 }
@@ -60,12 +61,12 @@ function calculateImprovements(statement: RiskPageProps["statement"]) {
   if (monthly.length >= 2) {
     const last = monthly[monthly.length - 1];
     const prev = monthly[monthly.length - 2];
-    const prevIn = prev.totalCredit?.toNumber() || 0;
-    const lastIn = last.totalCredit?.toNumber() || 0;
-    const prevOut = prev.totalDebit?.toNumber() || 0;
-    const lastOut = last.totalDebit?.toNumber() || 0;
-    const prevNet = prev.netFlow?.toNumber() || 0;
-    const lastNet = last.netFlow?.toNumber() || 0;
+    const prevIn = prev.totalCredit ?? 0;
+    const lastIn = last.totalCredit ?? 0;
+    const prevOut = prev.totalDebit ?? 0;
+    const lastOut = last.totalDebit ?? 0;
+    const prevNet = prev.netFlow ?? 0;
+    const lastNet = last.netFlow ?? 0;
     
     const inflowChange = prevIn > 0 ? ((lastIn - prevIn) / prevIn) * 100 : 0;
     const outflowChange = prevOut > 0 ? ((lastOut - prevOut) / prevOut) * 100 : 0;
@@ -88,35 +89,27 @@ function calculateImprovements(statement: RiskPageProps["statement"]) {
     }
   }
 
-  const totalDebit = statement.transactions.reduce((s, t) => s + t.debit.toNumber(), 0);
-  const categoryMap = new Map<string, number>();
-  for (const tx of statement.transactions) {
-    const cat = tx.category || "Other";
-    categoryMap.set(cat, (categoryMap.get(cat) || 0) + tx.debit.toNumber());
-  }
-  const topCat = Array.from(categoryMap.entries()).sort((a, b) => b[1] - a[1])[0];
-  if (topCat && totalDebit > 0) {
-    const pct = (topCat[1] / totalDebit) * 100;
-    if (pct > 50) {
-      concerns.push(`${topCat[0]} represents ${pct.toFixed(0)}% of total outflows (₦${topCat[1].toLocaleString()}).`);
-    }
+  const totalDebit = statement.categories.reduce((s, c) => s + c.totalDebit, 0);
+  const topCat = statement.categories[0];
+  if (topCat && totalDebit > 0 && topCat.percentage > 50) {
+    concerns.push(`${topCat.category} represents ${topCat.percentage.toFixed(0)}% of total outflows (₦${topCat.totalDebit.toLocaleString()}).`);
   }
 
   const risk = statement.riskScore;
   if (risk) {
-    if (risk.liquidityScore.toNumber() < 40) {
+    if ((risk.liquidityScore ?? 0) < 40) {
       concerns.push("Low liquidity — closing balance covers less than one month of average inflows.");
     }
-    if (risk.anomalyScore.toNumber() < 60) {
+    if ((risk.anomalyScore ?? 0) < 60) {
       concerns.push("Multiple statistically unusual transactions detected requiring review.");
     }
-    if (risk.consistencyScore.toNumber() < 40) {
+    if ((risk.consistencyScore ?? 0) < 40) {
       concerns.push("Cash flow shows high month-to-month volatility.");
     }
   }
 
-  const closingBalance = statement.monthlyMetrics[statement.monthlyMetrics.length - 1]?.endingBalance?.toNumber() || 0;
-  const totalIn = statement.transactions.reduce((s, t) => s + t.credit.toNumber(), 0);
+  const closingBalance = statement.monthlyMetrics[statement.monthlyMetrics.length - 1]?.endingBalance ?? 0;
+  const totalIn = statement.categories.reduce((s, c) => s + c.totalCredit, 0);
   if (totalIn > 0 && closingBalance / totalIn < 0.1) {
     concerns.push("Ending balances remain low relative to the volume of financial activity.");
   }
@@ -138,7 +131,7 @@ function calculateImprovements(statement: RiskPageProps["statement"]) {
 
 export function RiskPage({ statement }: RiskPageProps) {
   const risk = statement.riskScore;
-  const overallScore = risk?.overallScore.toNumber() || 0;
+  const overallScore = risk?.overallScore || 0;
   const { improvements, concerns, recommendations } = calculateImprovements(statement);
   const overallConfig = getScoreConfig(overallScore);
 
@@ -189,7 +182,7 @@ export function RiskPage({ statement }: RiskPageProps) {
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               {RISK_FACTORS.map((factor) => {
-                const score = risk?.[factor.key as keyof typeof risk]?.toNumber() || 0;
+                const score = risk?.[factor.key as keyof typeof risk] ?? 0;
                 const config = getScoreConfig(score);
                 return (
                   <span
@@ -213,7 +206,7 @@ export function RiskPage({ statement }: RiskPageProps) {
         {risk && (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {RISK_FACTORS.map((factor) => {
-              const score = risk[factor.key as keyof typeof risk]?.toNumber() || 0;
+              const score = risk[factor.key as keyof typeof risk] ?? 0;
               const config = getScoreConfig(score);
               return (
                 <div key={factor.key} className="glass rounded-xl p-4">

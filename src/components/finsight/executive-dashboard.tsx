@@ -14,21 +14,21 @@ interface ExecutiveDashboardProps {
     accountNumberMasked?: string | null;
     periodStart?: Date | null;
     periodEnd?: Date | null;
-    openingBalance: { toNumber(): number } | null;
-    closingBalance: { toNumber(): number } | null;
-    totalCredit: { toNumber(): number } | null;
-    totalDebit: { toNumber(): number } | null;
+    openingBalance: number | null;
+    closingBalance: number | null;
+    totalCredit: number | null;
+    totalDebit: number | null;
     creditCount: number | null;
     debitCount: number | null;
     uploadedAt: Date;
     uploadedFilename?: string | null;
     monthlyMetrics: Array<{
       month: Date;
-      totalCredit: { toNumber(): number } | null;
-      totalDebit: { toNumber(): number } | null;
-      netFlow: { toNumber(): number } | null;
+      totalCredit: number | null;
+      totalDebit: number | null;
+      netFlow: number | null;
       transactionCount: number;
-      endingBalance?: { toNumber(): number } | null;
+      endingBalance?: number | null;
     }>;
     insights: Array<{
       type: string;
@@ -37,22 +37,16 @@ interface ExecutiveDashboardProps {
       observation: string;
       explanation?: string | null;
       recommendation?: string | null;
-      confidence: { toNumber(): number } | null;
+      confidence: number | null;
     }>;
     riskScore: {
-      overallScore: { toNumber(): number } | null;
-      liquidityScore: { toNumber(): number } | null;
-      spendingScore: { toNumber(): number } | null;
-      consistencyScore: { toNumber(): number } | null;
-      anomalyScore: { toNumber(): number } | null;
-      concentrationScore: { toNumber(): number } | null;
+      overallScore: number | null;
+      liquidityScore: number | null;
+      spendingScore: number | null;
+      consistencyScore: number | null;
+      anomalyScore: number | null;
+      concentrationScore: number | null;
     } | null;
-    transactions: Array<{
-      description: string;
-      debit: { toNumber(): number };
-      credit: { toNumber(): number };
-      category?: string | null;
-    }>;
   };
 }
 
@@ -74,23 +68,23 @@ function TrendIcon({ change }: { change: number }) {
 }
 
 export function ExecutiveDashboard({ statement }: ExecutiveDashboardProps) {
-  const totalIn = statement.totalCredit?.toNumber() || 0;
-  const totalOut = statement.totalDebit?.toNumber() || 0;
+  const totalIn = statement.totalCredit ?? 0;
+  const totalOut = statement.totalDebit ?? 0;
   const netFlow = totalIn - totalOut;
-  const openingBal = statement.openingBalance?.toNumber() || 0;
-  const closingBal = statement.closingBalance?.toNumber() || 0;
+  const openingBal = statement.openingBalance ?? 0;
+  const closingBal = statement.closingBalance ?? 0;
   const risk = statement.riskScore;
-  const overallScore = risk?.overallScore?.toNumber() || 0;
+  const overallScore = risk?.overallScore ?? 0;
   const { label, color, icon: HealthIcon } = getHealthLabel(overallScore);
   
   const monthly = statement.monthlyMetrics;
   const lastMonth = monthly[monthly.length - 1];
   const prevMonth = monthly[monthly.length - 2];
-  const inflowChange = prevMonth && (prevMonth.totalCredit?.toNumber() || 0) > 0
-    ? (( (lastMonth.totalCredit?.toNumber() || 0) - (prevMonth.totalCredit?.toNumber() || 0) ) / (prevMonth.totalCredit?.toNumber() || 1)) * 100
+  const inflowChange = prevMonth && (prevMonth.totalCredit ?? 0) > 0
+    ? (( (lastMonth.totalCredit ?? 0) - (prevMonth.totalCredit ?? 0) ) / (prevMonth.totalCredit ?? 1)) * 100
     : 0;
-  const outflowChange = prevMonth && (prevMonth.totalDebit?.toNumber() || 0) > 0
-    ? (( (lastMonth.totalDebit?.toNumber() || 0) - (prevMonth.totalDebit?.toNumber() || 0) ) / (prevMonth.totalDebit?.toNumber() || 1)) * 100
+  const outflowChange = prevMonth && (prevMonth.totalDebit ?? 0) > 0
+    ? (( (lastMonth.totalDebit ?? 0) - (prevMonth.totalDebit ?? 0) ) / (prevMonth.totalDebit ?? 1)) * 100
     : 0;
 
   const highSeverityInsights = statement.insights.filter(i => i.severity === "critical" || i.severity === "warning").length;
@@ -214,27 +208,27 @@ export function ExecutiveDashboard({ statement }: ExecutiveDashboardProps) {
                   <>
                     <RiskFactor
                       label="Liquidity"
-                      score={risk.liquidityScore?.toNumber() || 0}
+                      score={risk.liquidityScore ?? 0}
                       description="Ability to meet short-term obligations"
                     />
                     <RiskFactor
                       label="Spending Concentration"
-                      score={risk.spendingScore?.toNumber() || 0}
+                      score={risk.spendingScore ?? 0}
                       description="Diversity of outflow categories"
                     />
                     <RiskFactor
                       label="Cash-Flow Consistency"
-                      score={risk.consistencyScore?.toNumber() || 0}
+                      score={risk.consistencyScore ?? 0}
                       description="Month-to-month stability"
                     />
                     <RiskFactor
                       label="Transaction Anomalies"
-                      score={risk.anomalyScore?.toNumber() || 0}
+                      score={risk.anomalyScore ?? 0}
                       description="Unusual transaction patterns"
                     />
                     <RiskFactor
                       label="Balance Retention"
-                      score={risk.concentrationScore?.toNumber() || 0}
+                      score={risk.concentrationScore ?? 0}
                       description="Inflows retained vs spent"
                     />
                   </>
@@ -255,14 +249,14 @@ export function ExecutiveDashboard({ statement }: ExecutiveDashboardProps) {
             <QuickStat
               label="Avg Monthly Inflow"
               value={monthly.length > 0
-                ? formatCurrency(monthly.reduce((s, m) => s + (m.totalCredit?.toNumber() || 0), 0) / monthly.length)
+                ? formatCurrency(monthly.reduce((s, m) => s + (m.totalCredit ?? 0), 0) / monthly.length)
                 : "₦0"}
               help="Average money received per month"
             />
             <QuickStat
               label="Avg Monthly Outflow"
               value={monthly.length > 0
-                ? formatCurrency(monthly.reduce((s, m) => s + (m.totalDebit?.toNumber() || 0), 0) / monthly.length)
+                ? formatCurrency(monthly.reduce((s, m) => s + (m.totalDebit ?? 0), 0) / monthly.length)
                 : "₦0"}
               help="Average money spent per month"
             />
@@ -414,7 +408,7 @@ function InsightCard({ insight }: { insight: ExecutiveDashboardProps["statement"
           <p className="mt-1 text-sm leading-relaxed">{insight.observation}</p>
           {insight.confidence && (
             <p className="mt-2 text-xs text-muted-foreground">
-              Confidence: {insight.confidence.toNumber().toFixed(0)}%
+              Confidence: {insight.confidence.toFixed(0)}%
             </p>
           )}
         </div>

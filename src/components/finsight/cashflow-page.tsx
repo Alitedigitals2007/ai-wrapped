@@ -22,14 +22,14 @@ interface CashFlowPageProps {
   statement: {
     monthlyMetrics: Array<{
       month: Date;
-      totalCredit: { toNumber(): number } | null;
-      totalDebit: { toNumber(): number } | null;
-      netFlow: { toNumber(): number } | null;
+      totalCredit: number | null;
+      totalDebit: number | null;
+      netFlow: number | null;
       transactionCount: number;
-      endingBalance?: { toNumber(): number } | null;
+      endingBalance?: number | null;
     }>;
-    totalCredit: { toNumber(): number } | null;
-    totalDebit: { toNumber(): number } | null;
+    totalCredit: number | null;
+    totalDebit: number | null;
   };
 }
 
@@ -41,8 +41,8 @@ function formatMonth(date: Date): string {
 
 export function CashFlowPage({ statement }: CashFlowPageProps) {
   const monthly = statement.monthlyMetrics;
-  const totalIn = statement.totalCredit?.toNumber() || 0;
-  const totalOut = statement.totalDebit?.toNumber() || 0;
+  const totalIn = statement.totalCredit ?? 0;
+  const totalOut = statement.totalDebit ?? 0;
   const netFlow = totalIn - totalOut;
   const avgInflow = monthly.length > 0 ? totalIn / monthly.length : 0;
   const avgOutflow = monthly.length > 0 ? totalOut / monthly.length : 0;
@@ -50,11 +50,11 @@ export function CashFlowPage({ statement }: CashFlowPageProps) {
   const chartData = monthly.map((m) => ({
     month: formatMonth(m.month),
     date: m.month,
-    moneyIn: m.totalCredit?.toNumber() || 0,
-    moneyOut: m.totalDebit?.toNumber() || 0,
-    netFlow: m.netFlow?.toNumber() || 0,
+    moneyIn: m.totalCredit ?? 0,
+    moneyOut: m.totalDebit ?? 0,
+    netFlow: m.netFlow ?? 0,
     transactions: m.transactionCount,
-    balance: m.endingBalance?.toNumber() || 0,
+    balance: m.endingBalance ?? 0,
   }));
 
   const summaryCards = [

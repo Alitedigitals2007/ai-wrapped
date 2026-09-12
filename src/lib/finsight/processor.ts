@@ -203,6 +203,7 @@ function detectTransactionSheets(workbook: XLSX.WorkBook): string[] {
     const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
     if (data.length < 2) continue;
     
+    // Try header-based detection first
     const headers = data[0] as string[];
     const hasDate = findColumn(headers, "date") >= 0;
     const hasMoney = findColumn(headers, "debit") >= 0 || findColumn(headers, "credit") >= 0 || findColumn(headers, "balance") >= 0;
@@ -210,6 +211,32 @@ function detectTransactionSheets(workbook: XLSX.WorkBook): string[] {
     
     if (hasDate && hasMoney && hasDescription) {
       transactionSheets.push(sheetName);
+      continue;
+    }
+    
+    // Fallback: headerless detection (OPay-style: datetime, date, description, debit, credit, balance, channel, reference)
+    const rows = data as (string | number)[][];
+    if (rows.length >= 2 && rows[0].length >= 6) {
+      const firstRow = rows[0];
+      const secondRow = rows[1];
+      
+      // Check if first column looks like datetime "DD MMM YYYY HH:mm:ss"
+      const datetimeRegex = /^\d{2}\s\w{3}\s\d{4}\s\d{2}:\d{2}:\d{2}$/;
+      const isDateTime = typeof firstRow[0] === "string" && datetimeRegex.test(firstRow[0].trim());
+      
+      // Check if columns 3/4 look like amounts (numbers or "--")
+      const looksLikeAmount = (val: unknown) => {
+        if (val === null || val === undefined) return false;
+        const str = String(val).trim();
+        return str === "--" || /^[\d,]+\.?\d*$/.test(str.replace(/,/g, ""));
+      };
+      
+      const hasMoneyCols = looksLikeAmount(firstRow[3]) || looksLikeAmount(firstRow[4]) || looksLikeAmount(secondRow[3]) || looksLikeAmount(secondRow[4]);
+      const hasDesc = typeof firstRow[2] === "string" && firstRow[2].trim().length > 5;
+      
+      if (isDateTime && hasMoneyCols && hasDesc) {
+        transactionSheets.push(sheetName);
+      }
     }
   }
   
@@ -220,20 +247,45 @@ function extractTransactions(sheet: XLSX.WorkSheet): NormalizedTransaction[] {
   const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
   if (data.length < 2) return [];
   
-  const headers = data[0] as string[];
-  const dateCol = findColumn(headers, "date");
-  const descCol = findColumn(headers, "description");
-  const debitCol = findColumn(headers, "debit");
-  const creditCol = findColumn(headers, "credit");
-  const balanceCol = findColumn(headers, "balance");
-  const referenceCol = findColumn(headers, "reference");
-  const channelCol = findColumn(headers, "channel");
+  // Check if headerless format (OPay style)
+  const firstRow = data[0] as (string | number)[];
+  const datetimeRegex = /^\d{2}\s\w{3}\s\d{4}\s\d{2}:\d{2}:\d{2}$/;
+  const isHeaderless = typeof firstRow[0] === "string" && datetimeRegex.test(firstRow[0].trim());
   
-  if (dateCol < 0 || descCol < 0) return [];
+  const startRow = 1;
+  let dateCol = 0;
+  let descCol = 2;
+  let debitCol = 3;
+  let creditCol = 4;
+  let balanceCol = 5;
+  let channelCol = 6;
+  let referenceCol = 7;
+  
+  if (!isHeaderless) {
+    // Header-based extraction
+    const headers = data[0] as string[];
+    const dateIdx = findColumn(headers, "date");
+    const descIdx = findColumn(headers, "description");
+    const debitIdx = findColumn(headers, "debit");
+    const creditIdx = findColumn(headers, "credit");
+    const balanceIdx = findColumn(headers, "balance");
+    const referenceIdx = findColumn(headers, "reference");
+    const channelIdx = findColumn(headers, "channel");
+    
+    if (dateIdx < 0 || descIdx < 0) return [];
+    
+    dateCol = dateIdx;
+    descCol = descIdx;
+    debitCol = debitIdx >= 0 ? debitIdx : -1;
+    creditCol = creditIdx >= 0 ? creditIdx : -1;
+    balanceCol = balanceIdx >= 0 ? balanceIdx : -1;
+    referenceCol = referenceIdx >= 0 ? referenceIdx : -1;
+    channelCol = channelIdx >= 0 ? channelIdx : -1;
+  }
   
   const transactions: NormalizedTransaction[] = [];
   
-  for (let i = 1; i < data.length; i++) {
+  for (let i = startRow; i < data.length; i++) {
     const row = data[i] as (string | number)[];
     if (!row || row.length === 0) continue;
     

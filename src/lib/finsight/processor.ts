@@ -232,14 +232,7 @@ function detectTransactionSheets(workbook: XLSX.WorkBook): string[] {
         return str === "--" || /^[\d,]+\.?\d*$/.test(str.replace(/,/g, ""));
 };
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+
       
       const hasMoneyCols = looksLikeAmount(firstRow[3]) || looksLikeAmount(firstRow[4]) || looksLikeAmount(secondRow[3]) || looksLikeAmount(secondRow[4]);
       const hasDesc = typeof firstRow[2] === "string" && firstRow[2].trim().length > 5;
@@ -664,13 +657,21 @@ export async function processExcelFile(buffer: Buffer, filename: string): Promis
     closingBalance,
     totalCredit,
     totalDebit,
-    creditCount,
-    debitCount,
-    transactions: allTransactions,
-    monthlyMetrics: monthly,
-    categories,
-    insights,
-    riskScore,
-  };
+creditCount,
+     debitCount,
+     transactions: allTransactions,
+     monthlyMetrics: monthly,
+     categories,
+     insights,
+     riskScore,
+   };
+}
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 

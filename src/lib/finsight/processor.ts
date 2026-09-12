@@ -617,13 +617,26 @@ export async function processExcelFile(buffer: Buffer, filename: string): Promis
     throw new Error("No transaction sheets detected. Ensure the file has date, description, and amount columns.");
   }
   
-  let allTransactions: NormalizedTransaction[] = [];
-  
-  for (const sheetName of transactionSheets) {
-    const sheet = workbook.Sheets[sheetName];
-    const txs = extractTransactions(sheet);
-    allTransactions.push(...txs);
-  }
+let allTransactions: NormalizedTransaction[] = [];
+
+   // Select wallet sheet: prefer sheet name containing 'wallet' (case-insensitive), else first detected sheet
+   let selectedSheetName: string | undefined;
+   for (const name of transactionSheets) {
+     if (name.toLowerCase().includes('wallet')) {
+       selectedSheetName = name;
+       break;
+     }
+   }
+   if (!selectedSheetName && transactionSheets.length > 0) {
+     selectedSheetName = transactionSheets[0];
+   }
+   if (!selectedSheetName) {
+     throw new Error("No transaction sheets detected. Ensure the file has date, description, and amount columns.");
+   }
+
+   const sheet = workbook.Sheets[selectedSheetName];
+   const txs = extractTransactions(sheet);
+   allTransactions = txs;
   
   allTransactions = cleanTransactions(allTransactions);
   

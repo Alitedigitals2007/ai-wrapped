@@ -34,8 +34,6 @@ const FEATURES = [
 ];
 
 export function FinSightLanding({ statements }: FinSightLandingProps) {
-  const hasStatements = statements.length > 0;
-
   return (
     <main className="relative flex-1 min-h-screen px-4 pt-24 pb-20">
       <div className="pointer-events-none fixed inset-0 -z-10">
@@ -74,104 +72,7 @@ export function FinSightLanding({ statements }: FinSightLandingProps) {
           </div>
         </div>
 
-        {!hasStatements && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center py-16"
-          >
-            <div className="mx-auto size-24 grid place-items-center rounded-3xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-5xl">
-              📄
-            </div>
-            <h2 className="mt-6 font-display text-2xl font-bold">No analyses yet</h2>
-            <p className="mt-2 text-muted-foreground max-w-md mx-auto">
-              Upload your first bank statement to see FinSight in action. Supports .xlsx and .xls files up to 10MB.
-            </p>
-            <Link
-              href="/finsight/upload"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-500 px-8 py-3 font-semibold text-white hover:scale-[1.03] transition-transform"
-            >
-              <Plus className="size-4" /> Upload Statement
-            </Link>
-          </motion.div>
-        )}
 
-        {hasStatements && (
-          <>
-            <div className="mt-8">
-              <h2 className="font-display text-2xl font-bold">Your Analyses</h2>
-              <p className="mt-1 text-muted-foreground">{statements.length} statement{statements.length !== 1 ? "s" : ""} processed</p>
-            </div>
-
-            <div className="mt-6 space-y-4">
-              {statements.map((stmt, i) => (
-                <motion.article
-                  key={stmt.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08, duration: 0.4 }}
-                  className="glass rounded-3xl p-5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                >
-                  <Link href={`/finsight/${stmt.id}`} className="block">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="size-14 grid place-items-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-2xl">
-                          📊
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">
-                            {stmt.accountName || "Financial Statement"}
-                            {stmt.accountNumberMasked && (
-                              <span className="ml-2 text-sm text-muted-foreground font-normal">
-                                · ending in {stmt.accountNumberMasked}
-                              </span>
-                            )}
-                          </h3>
-                          <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                            <span>{format(stmt.periodStart || stmt.uploadedAt, "MMM d, yyyy")} — {format(stmt.periodEnd || stmt.uploadedAt, "MMM d, yyyy")}</span>
-                            <span>📄 {stmt._count.transactions.toLocaleString()} transactions</span>
-                            <span>Uploaded {format(stmt.uploadedAt, "MMM d, yyyy")}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 sm:ml-auto">
-                        <div className="hidden sm:flex items-center gap-6 text-sm font-medium">
-                          <span className="text-emerald-600 dark:text-emerald-400">In: {formatCurrency(stmt.totalCredit ?? 0)}</span>
-                          <span className="text-rose-600 dark:text-rose-400">Out: {formatCurrency(stmt.totalDebit ?? 0)}</span>
-                          <span className={cn("font-semibold", (stmt.closingBalance ?? 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
-                            Bal: {formatCurrency(stmt.closingBalance ?? 0)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Link
-                            href={`/api/finsight/report/${stmt.id}`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/70 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                          >
-                            <Download className="size-4" />
-                          </Link>
-                          <button
-                            onClick={(e) => { e.preventDefault(); if (confirm("Delete this analysis?")) { /* delete action */ } }}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/70 text-rose-500 hover:bg-rose-500/10 transition-colors"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 grid gap-4 sm:grid-cols-4">
-                      <FeatureLink statementId={stmt.id} feature={FEATURES[0]} label="Executive" />
-                      <FeatureLink statementId={stmt.id} feature={FEATURES[1]} label="Cash Flow" />
-                      <FeatureLink statementId={stmt.id} feature={FEATURES[2]} label="Insights" />
-                      <FeatureLink statementId={stmt.id} feature={FEATURES[3]} label="Risk" />
-                    </div>
-                  </Link>
-                </motion.article>
-              ))}
-            </div>
-          </>
-        )}
 
         <div className="mt-16">
           <h2 className="font-display text-2xl font-bold text-center">What You Get</h2>

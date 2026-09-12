@@ -40,6 +40,11 @@ const features = [
     title: "A question a day",
     text: "A new scenario every day. Pick your move, get an instant read, and keep a tiny ritual of self-reflection.",
   },
+  {
+    emoji: "📊",
+    title: "Financial Statement Intelligence",
+    text: "Upload Excel statements, get cash flow charts, spending categories, pattern detection, risk scores, and AI explanations.",
+  },
 ];
 
 export function Features() {
@@ -101,6 +106,12 @@ export function CTA() {
               className="inline-block rounded-full bg-gradient-to-r from-amber-500 to-rose-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
             >
               Make a quiz 👀
+            </Link>
+            <Link
+              href="/finsight"
+              className="inline-block rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-500 px-8 py-4 text-lg font-semibold text-white hover:scale-[1.03] active:scale-95 transition-transform glow-primary"
+            >
+              Analyze statement 📊
             </Link>
             <Link
               href="/generate"
@@ -166,6 +177,7 @@ export function FAQ() {
 }
 
 export function Footer() {
+  const APP_URL = "myalite.vercel.app";
   return (
     <footer className="px-4 py-10 border-t border-black/5 dark:border-white/5">
       <div className="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
@@ -180,6 +192,12 @@ export function Footer() {
           <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
           <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
           <Link href="/admin/login" className="hover:text-foreground transition-colors">Admin</Link>
+          <span className="text-muted-foreground/50">·</span>
+          <span className="inline-flex items-center gap-1.5">
+            <a href={`https://${APP_URL}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:underline">
+              {APP_URL}
+            </a>
+          </span>
           <span className="text-muted-foreground/50">·</span>
           <span className="inline-flex items-center gap-1.5">
             Built by <span className="font-semibold text-foreground">Alite</span>

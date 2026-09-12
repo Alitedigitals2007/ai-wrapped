@@ -35,6 +35,7 @@ export function Navbar() {
   const links = [
     { href: "/quiz", label: "Play a quiz" },
     { href: "/daily", label: "Daily question" },
+    { href: "/finsight", label: "FinSight" },
     { href: "/compare", label: "Compare" },
     { href: "#how", label: "How it works" },
     { href: "#features", label: "Features" },

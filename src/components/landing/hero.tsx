@@ -58,15 +58,16 @@ export function Hero() {
           Share it.
         </motion.h1>
 
-        <motion.p
+<motion.p
           className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
           {APP_NAME} is a playground of fun: a scenario-based personality test, a
-          &quot;Who knows me best?&quot; quiz for you and your friends, a question a day to
-          reflect on, and the classic AI Wrapped story. All free, no account needed.
+          &ldquo;Who knows me best?&rdquo; quiz for you and your friends, a question a day to
+          reflect on, financial statement intelligence, and the classic AI Wrapped story.
+          All free, no account needed.
         </motion.p>
 
         <motion.div
@@ -152,6 +153,16 @@ export function Choose() {
       cta: "Answer today's ✨",
       grad: "bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500",
       time: "~10 sec",
+    },
+    {
+      href: "/finsight",
+      emoji: "📊",
+      title: "FinSight",
+      tag: "Money",
+      text: "Upload your bank statement (Excel) and get cash flow analysis, spending breakdown, pattern detection, and risk scoring.",
+      cta: "Analyze statement 📊",
+      grad: "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-500",
+      time: "~1 min",
     },
   ];
   return (

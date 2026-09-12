@@ -67,3 +67,109 @@ model QuizAttempt {
   @@index([createdAt])
   @@map("quiz_attempts")
 }
+
+model FinSightStatement {
+  id                   String    @id @default(cuid())
+  accountName          String?
+  accountNumberMasked  String?
+  statementType        String?
+  periodStart          DateTime?
+  periodEnd            DateTime?
+  openingBalance       Decimal?  @db.Decimal(18,2)
+  closingBalance       Decimal?  @db.Decimal(18,2)
+  totalCredit          Decimal?  @db.Decimal(18,2)
+  totalDebit           Decimal?  @db.Decimal(18,2)
+  creditCount          Int?
+  debitCount           Int?
+  uploadedFilename     String?
+  uploadedAt           DateTime  @default(now()) @map("uploaded_at")
+  processedAt          DateTime? @map("processed_at")
+  status               String    @default("pending")
+
+  transactions         FinSightTransaction[]
+  monthlyMetrics       FinSightMonthlyMetric[]
+  insights             FinSightInsight[]
+  riskScore            FinSightRiskScore?
+
+  @@index([uploadedAt])
+  @@map("finsight_statements")
+}
+
+model FinSightTransaction {
+  id                   String    @id @default(cuid())
+  statementId          String
+  transactionDate      DateTime  @map("transaction_date")
+  valueDate            DateTime? @map("value_date")
+  description          String
+  debit                Decimal   @default(0) @db.Decimal(18,2)
+  credit               Decimal   @default(0) @db.Decimal(18,2)
+  balance              Decimal?  @db.Decimal(18,2)
+  channel              String?
+  reference            String?
+  category             String?
+  subcategory          String?
+  normalizedDescription String?  @map("normalized_description")
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  statement            FinSightStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  @@index([statementId])
+  @@index([transactionDate])
+  @@index([category])
+  @@map("finsight_transactions")
+}
+
+model FinSightMonthlyMetric {
+  id                   String    @id @default(cuid())
+  statementId          String
+  month                DateTime
+  totalCredit          Decimal   @db.Decimal(18,2)
+  totalDebit           Decimal   @db.Decimal(18,2)
+  netFlow              Decimal   @db.Decimal(18,2)
+  transactionCount     Int
+  averageBalance       Decimal?  @db.Decimal(18,2)
+  endingBalance        Decimal?  @db.Decimal(18,2)
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  statement            FinSightStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  @@unique([statementId, month])
+  @@index([statementId])
+  @@map("finsight_monthly_metrics")
+}
+
+model FinSightInsight {
+  id                   String    @id @default(cuid())
+  statementId          String
+  type                 String
+  severity             String
+  title                String
+  observation          String
+  explanation          String?
+  recommendation       String?
+  confidence           Decimal?  @db.Decimal(5,2)
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  statement            FinSightStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  @@index([statementId])
+  @@index([type])
+  @@map("finsight_insights")
+}
+
+model FinSightRiskScore {
+  id                   String    @id @default(cuid())
+  statementId          String    @unique
+  overallScore         Decimal   @db.Decimal(5,2)
+  liquidityScore       Decimal   @db.Decimal(5,2)
+  spendingScore        Decimal   @db.Decimal(5,2)
+  consistencyScore     Decimal   @db.Decimal(5,2)
+  anomalyScore         Decimal   @db.Decimal(5,2)
+  concentrationScore   Decimal   @db.Decimal(5,2)
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  statement            FinSightStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  @@index([statementId])
+  @@map("finsight_risk_scores")
+}

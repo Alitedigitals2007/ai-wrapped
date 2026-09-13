@@ -27,14 +27,15 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { AI_OPTIONS, AI_EMOJI } from "@/lib/analysis/prompt";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Search, Download, Eye, Trash2, LogOut, Loader2, Inbox } from "lucide-react";
-import { cn } from "@/lib/utils";
+DialogTitle,
+ } from "@/components/ui/dialog";
+ import { AI_OPTIONS, AI_EMOJI } from "@/lib/analysis/prompt";
+ import { ThemeToggle } from "@/components/ui/theme-toggle";
+ import { Search, Download, Eye, Trash2, LogOut, Loader2, Inbox } from "lucide-react";
+ import { cn } from "@/lib/utils";
+ import { formatCurrency } from "@/lib/finsight/processor";
 
-type Tab = "wraps" | "tests" | "quizzes";
+type Tab = "wraps" | "tests" | "quizzes" | "statements";
 
 interface WrapRow {
   id: string;
@@ -64,6 +65,19 @@ interface QuizRow {
   createdAt: string;
   questionCount: number;
   attempts: number;
+}
+
+interface StatementRow {
+  id: string;
+  accountName: string;
+  accountNumberMasked: string;
+  periodStart: string;
+  periodEnd: string;
+  totalCredit: number;
+  totalDebit: number;
+  status: string;
+  uploadedAt: string;
+  transactionCount: number;
 }
 
 function fmtDate(iso: string) {
@@ -97,6 +111,7 @@ export default function AdminDashboard() {
   const [rows, setRows] = useState<WrapRow[]>([]);
   const [testRows, setTestRows] = useState<TestRow[]>([]);
   const [quizRows, setQuizRows] = useState<QuizRow[]>([]);
+  const [statementRows, setStatementRows] = useStatement<StatementRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -104,7 +119,7 @@ export default function AdminDashboard() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sort, setSort] = useState("newest");
-  const [toDelete, setToDelete] = useState<WrapRow | TestRow | QuizRow | null>(null);
+  const [toDelete, setToDelete] = useState<WrapRow | TestRow | QuizRow | StatementRow | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -142,7 +157,7 @@ export default function AdminDashboard() {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error ?? "Failed to load");
           if (!cancelled) setTestRows(data.rows ?? []);
-        } else {
+        } else if (tab === "quizzes") {
           const params = new URLSearchParams();
           if (search) params.set("search", search);
           const res = await fetch(`/api/quiz?${params.toString()}`);
@@ -153,6 +168,18 @@ export default function AdminDashboard() {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error ?? "Failed to load");
           if (!cancelled) setQuizRows(data.rows ?? []);
+        } else if (tab === "statements") {
+          const params = new URLSearchParams();
+          if (search) params.set("search", search);
+          if (sort !== "newest") params.set("sort", sort);
+          const res = await fetch(`/api/finsight?${params.toString()}`);
+          if (res.status === 401) {
+            router.push("/admin/login");
+            return;
+          }
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error ?? "Failed to load");
+          if (!cancelled) setStatementRows(data.rows ?? []);
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load data");
@@ -174,19 +201,35 @@ export default function AdminDashboard() {
       let res: Response;
       if (kind === "quizzes") {
         res = await fetch(`/api/quiz/${"code" in toDelete ? toDelete.code : ""}`, { method: "DELETE" });
-      } else {
-        res = await fetch(`/api/${kind === "wraps" ? "submissions" : "assessments"}/${toDelete.id}`, { method: "DELETE" });
+      } else if (kind === "wraps") {
+        res = await fetch(`/api/submissions/${toDelete.id}`, { method: "DELETE" });
+      } else if (kind === "tests") {
+        res = await fetch(`/api/assessments/${toDelete.id}`, { method: "DELETE" });
+      } else if (kind === "statements") {
+        res = await fetch(`/api/finsight/${toDelete.id}`, { method: "DELETE" });
       }
       if (res.status === 401) {
         router.push("/admin/login");
         return;
       }
       if (!res.ok) throw new Error("Delete failed");
-      const label = "username" in toDelete ? toDelete.username : "creatorName" in toDelete ? toDelete.creatorName : toDelete.name;
+      const label =
+        "username" in toDelete
+          ? toDelete.username
+          : "creatorName" in toDelete
+            ? toDelete.creatorName
+            : "name" in toDelete
+              ? toDelete.name
+              : "accountName" in toDelete
+                ? toDelete.accountName
+                : "accountNumberMasked" in toDelete
+                  ? toDelete.accountNumberMasked
+                  : "";
       toast.success(`Deleted ${label}'s record`);
       if (kind === "wraps") setRows((r) => r.filter((x) => x.id !== toDelete.id));
       else if (kind === "tests") setTestRows((r) => r.filter((x) => x.id !== toDelete.id));
-      else setQuizRows((r) => r.filter((x) => x.id !== toDelete.id));
+      else if (kind === "quizzes") setQuizRows((r) => r.filter((x) => x.id !== toDelete.id));
+      else if (kind === "statements") setStatementRows((r) => r.filter((x) => x.id !== toDelete.id));
       setToDelete(null);
     } catch {
       toast.error("Could not delete record");
@@ -253,6 +296,39 @@ export default function AdminDashboard() {
       return;
     }
 
+    if (tab === "statements") {
+      if (statementRows.length === 0) {
+        toast.error("Nothing to export");
+        return;
+      }
+      const header = ["ID", "Account Name", "Account Number Masked", "Period Start", "Period End", "Total Credit", "Total Debit", "Status", "Uploaded At", "Transaction Count", "Link"];
+      const lines = statementRows.map((r) =>
+        [
+          `"${r.id}"`,
+          `"${r.accountName.replace(/"/g, '""')}"`,
+          `"${r.accountNumberMasked.replace(/"/g, '""')}"`,
+          `${r.periodStart ?? ""}`,
+          `${r.periodEnd ?? ""}`,
+          r.totalCredit,
+          r.totalDebit,
+          `"${r.status.replace(/"/g, '""')}"`,
+          `${r.uploadedAt ?? ""}`,
+          r.transactionCount,
+          `${window.location.origin}/finsight/${r.id}`,
+        ].join(",")
+      );
+      const csv = [header.join(","), ...lines].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `finsight-statements-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("CSV exported");
+      return;
+    }
+
     if (testRows.length === 0) {
       toast.error("Nothing to export");
       return;
@@ -286,7 +362,7 @@ export default function AdminDashboard() {
     router.refresh();
   };
 
-  const total = tab === "wraps" ? rows.length : tab === "tests" ? testRows.length : quizRows.length;
+  const total = tab === "wraps" ? rows.length : tab === "tests" ? testRows.length : tab === "quizzes" ? quizRows.length : tab === "statements" ? statementRows.length : 0;
   const avgScore = useMemo(() => {
     if (tab === "wraps")
       return total ? Math.round(rows.reduce((s, r) => s + r.overallScore, 0) / total) : 0;
@@ -311,7 +387,7 @@ export default function AdminDashboard() {
               📊 Dashboard
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {total} {tab === "wraps" ? "submission" : tab === "tests" ? "test" : "quiz"}
+              {total} {tab === "wraps" ? "submission" : tab === "tests" ? "test" : tab === "quizzes" ? "quiz" : tab === "statements" ? "statement" : ""}
               {total === 1 ? "" : "s"} · {tab === "quizzes" ? "avg attempts" : "average score"} {avgScore}
             </p>
           </div>
@@ -326,7 +402,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="glass rounded-3xl p-1.5 grid grid-cols-3 gap-1 max-w-md">
+        <div className="glass rounded-3xl p-1.5 grid grid-cols-4 gap-1 max-w-md">
           <button
             onClick={() => {
               setTab("wraps");
@@ -368,6 +444,20 @@ export default function AdminDashboard() {
             )}
           >
             👀 Quizzes
+          </button>
+          <button
+            onClick={() => {
+              setTab("statements");
+              setSearch("");
+            }}
+            className={cn(
+              "rounded-2xl px-4 py-2.5 text-sm font-semibold transition-colors",
+              tab === "statements"
+                ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            📄 Statements
           </button>
         </div>
 
@@ -413,251 +503,215 @@ export default function AdminDashboard() {
         </div>
 
         <div className="glass rounded-3xl overflow-hidden">
-          {tab === "wraps" ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>AI Used</TableHead>
-                  <TableHead>
-                    <button
-                      onClick={() => setSort(sort === "score" ? "newest" : "score")}
-                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                    >
-                      Score
-                      <span className="text-[10px]">{sort === "score" ? "↑" : ""}</span>
-                    </button>
-                  </TableHead>
-                  <TableHead>Personality</TableHead>
-                  <TableHead>
-                    <button
-                      onClick={() => setSort(sort === "oldest" ? "newest" : "oldest")}
-                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                    >
-                      Date
-                      <span className="text-[10px]">{sort === "oldest" ? "↑" : ""}</span>
-                    </button>
-                  </TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                      <Loader2 className="mx-auto size-6 animate-spin" />
-                      Loading submissions...
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-destructive">{error}</TableCell>
-                  </TableRow>
-                ) : rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                      <Inbox className="mx-auto size-8 mb-2 opacity-50" />
-                      No submissions found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((r) => (
-                    <TableRow key={r.id} className="group">
-                      <TableCell className="font-semibold">{r.username}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center gap-1.5">
-                          {AI_EMOJI[r.aiUsed] ?? "🤖"} {r.aiUsed}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <ScoreBadge score={r.overallScore} />
-                      </TableCell>
-                      <TableCell className="text-muted-foreground max-w-[180px] truncate" title={r.personalityType}>
-                        {r.personalityType}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground whitespace-nowrap">{fmtDate(r.createdAt)}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                          Completed
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                          <Button size="sm" variant="ghost" render={<Link href={`/admin/${r.id}`} />}>
-                            <Eye className="mr-1.5 size-4" /> View
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setToDelete(r)}>
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+{tab === "wraps" ? (
+             <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>Username</TableHead>
+                   <TableHead>AI Used</TableHead>
+                   <TableHead>
+                     <button
+                       onClick={() => setSort(sort === "score" ? "newest" : "score")}
+                       className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                     >
+                       Score
+                       <span className="text-[10px]">{sort === "score" ? "↑" : ""}</span>
+                     </button>
+                   </TableHead>
+                   <TableHead>Personality</TableHead>
+                   <TableHead>
+                     <button
+                       onClick={() => setSort(sort === "oldest" ? "newest" : "oldest")}
+                       className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                     >
+                       Date
+                       <span className="text-[10px]">{sort === "oldest" ? "↑" : ""}</span>
+                     </button>
+                   </TableHead>
+                   <TableHead>Status</TableHead>
+                   <TableHead className="text-right">Actions</TableHead>
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+                 {loading ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                       <Loader2 className="mx-auto size-6 animate-spin" />
+                       Loading submissions...
+                     </TableCell>
+                   </TableRow>
+                 ) : error ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="h-32 text-center text-destructive">{error}</TableCell>
+                   </TableRow>
+                 ) : rows.length === 0 ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                       <Inbox className="mx-auto size-8 mb-2 opacity-50" />
+                       No submissions found
+                     </TableCell>
+                   </TableRow>
+                 ) : (
+                   rows.map((r) => (
+                     <TableRow key={r.id} className="group">
+                       <TableCell className="font-semibold">{r.username}</TableCell>
+                       <TableCell>
+                         <span className="inline-flex items-center gap-1.5">
+                           {AI_EMOJI[r.aiUsed] ?? "🤖"} {r.aiUsed}
+                         </span>
+                       </TableCell>
+                       <TableCell>
+                         <ScoreBadge score={r.overallScore} />
+                       </TableCell>
+                       <TableCell className="text-muted-foreground max-w-[180px] truncate" title={r.personalityType}>
+                         {r.personalityType}
+                       </TableCell>
+                       <TableCell className="text-muted-foreground whitespace-nowrap">{fmtDate(r.createdAt)}</TableCell>
+                       <TableCell>
+                         <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                           Completed
+                         </span>
+                       </TableCell>
+                       <TableCell className="text-right">
+                         <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                           <Button size="sm" variant="ghost" render={<Link href={`/admin/${r.id}`} />}>
+                             <Eye className="mr-1.5 size-4" /> View
+                           </Button>
+                           <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setToDelete(r)}>
+                             <Trash2 className="size-4" />
+                           </Button>
+                         </div>
+                       </TableCell>
+                     </TableRow>
+                   ))
+                 )}
+               </TableBody>
+             </Table>
+           ) : tab === "tests" ? (
+             <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>Name</TableHead>
+                   <TableHead>Archetype</TableHead>
+                   <TableHead>
+                     <button
+                       onClick={() => setSort(sort === "score" ? "newest" : "score")}
+                       className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                     >
+                       Avg Dimension Score
+                       <span className="text-[10px]">{sort === "score" ? "↑" : ""}</span>
+                     </button>
+                   </TableHead>
+                   <TableHead>Engine</TableHead>
+                   <TableHead>
+                     <button
+                       onClick={() => setSort(sort === "oldest" ? "newest" : "oldest")}
+                       className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                     >
+                       Date
+                       <span className="text-[10px]">{sort === "oldest" ? "↑" : ""}</span>
+                     </button>
+                   </TableHead>
+                   <TableHead>Code</TableHead>
+                   <TableHead className="text-right">Actions</TableHead>
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+                 {loading ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                       <Loader2 className="mx-auto size-6 animate-spin" />
+                       Loading personality tests...
+                     </TableCell>
+                   </TableRow>
+                 ) : error ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="h-32 text-center text-destructive">{error}</TableCell>
+                   </TableRow>
+                 ) : testRows.length === 0 ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                       <Inbox className="mx-auto size-8 mb-2 opacity-50" />
+                       No personality tests found
+                     </TableCell>
+                   </TableRow>
+                 ) : (
+                   testRows.map((r) => (
+                     <TableRow key={r.id} className="group">
+                       <TableCell className="font-semibold">{r.name}</TableCell>
+                       <TableCell className="text-muted-foreground max-w-[180px] truncate" title={r.archetype}>
+                         {r.archetype}
+                       </TableCell>
+                       <TableCell>
+                         <ScoreBadge score={r.overallScore} />
+                       </TableCell>
+                       <TableCell>
+                         <span
+                           className={cn(
+                             "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                             r.engine === "groq"
+                               ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                               : r.engine === "openai"
+                                 ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
+                                 : "bg-black/5 text-muted-foreground dark:bg-white/10"
+                           )}
+                         >
+                           {r.engine === "groq" ? "⚡ Groq" : r.engine === "openai" ? "✦ OpenAI" : "⚙️ Local"}
+                         </span>
+                       </TableCell>
+                       <TableCell className="text-muted-foreground whitespace-nowrap">{fmtDate(r.createdAt)}</TableCell>
+                       <TableCell className="font-mono font-bold">{r.code ?? "—"}</TableCell>
+                       <TableCell className="text-right">
+                         <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                           <Button size="sm" variant="ghost" render={<Link href={`/admin/test/${r.id}`} />}>
+                             <Eye className="mr-1.5 size-4" /> View
+                           </Button>
+                           <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setToDelete(r)}>
+                             <Trash2 className="size-4" />
+                           </Button>
+                         </div>
+                       </TableCell>
+                     </TableRow>
+                   ))
+                 )}
+               </TableBody>
+             </Table>
+           ) : tab === "quizzes" ? (
+             <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>Creator</TableHead>
+                   <TableHead>Title</TableHead>
+                   <TableHead>Questions</TableHead>
+                   <TableHead>Attempts</TableHead>
+                   <TableHead>
+                     <button
+                       onClick={() => setSort(sort === "oldest" ? "newest" : "oldest")}
+                       className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                     >
+                       Date
+                       <span className="text-[10px]">{sort === "oldest" ? "↑" : ""}</span>
+                     </button>
+                   </TableHead>
+                   <TableHead>Code</TableHead>
+                   <TableHead className="text-right">Actions</TableHead>
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+                 {loading ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                       <Loader2 className="mx-auto size-6 animate-spin" />
+                       Loading quizzes...
+                     </TableCell>
+                   </TableRow>
+) : error ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-32 text-center text-destructive">{error}</TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          ) : tab === "tests" ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Archetype</TableHead>
-                  <TableHead>
-                    <button
-                      onClick={() => setSort(sort === "score" ? "newest" : "score")}
-                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                    >
-                      Avg Dimension Score
-                      <span className="text-[10px]">{sort === "score" ? "↑" : ""}</span>
-                    </button>
-                  </TableHead>
-                  <TableHead>Engine</TableHead>
-                  <TableHead>
-                    <button
-                      onClick={() => setSort(sort === "oldest" ? "newest" : "oldest")}
-                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                    >
-                      Date
-                      <span className="text-[10px]">{sort === "oldest" ? "↑" : ""}</span>
-                    </button>
-                  </TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                      <Loader2 className="mx-auto size-6 animate-spin" />
-                      Loading personality tests...
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-destructive">{error}</TableCell>
-                  </TableRow>
-                ) : testRows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                      <Inbox className="mx-auto size-8 mb-2 opacity-50" />
-                      No personality tests found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  testRows.map((r) => (
-                    <TableRow key={r.id} className="group">
-                      <TableCell className="font-semibold">{r.name}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-[180px] truncate" title={r.archetype}>
-                        {r.archetype}
-                      </TableCell>
-                      <TableCell>
-                        <ScoreBadge score={r.overallScore} />
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                            r.engine === "groq"
-                              ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                              : r.engine === "openai"
-                                ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
-                                : "bg-black/5 text-muted-foreground dark:bg-white/10"
-                          )}
-                        >
-                          {r.engine === "groq" ? "⚡ Groq" : r.engine === "openai" ? "✦ OpenAI" : "⚙️ Local"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground whitespace-nowrap">{fmtDate(r.createdAt)}</TableCell>
-                      <TableCell className="font-mono font-bold">{r.code ?? "—"}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                          <Button size="sm" variant="ghost" render={<Link href={`/admin/test/${r.id}`} />}>
-                            <Eye className="mr-1.5 size-4" /> View
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setToDelete(r)}>
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Creator</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Questions</TableHead>
-                  <TableHead>Attempts</TableHead>
-                  <TableHead>
-                    <button
-                      onClick={() => setSort(sort === "oldest" ? "newest" : "oldest")}
-                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                    >
-                      Date
-                      <span className="text-[10px]">{sort === "oldest" ? "↑" : ""}</span>
-                    </button>
-                  </TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                      <Loader2 className="mx-auto size-6 animate-spin" />
-                      Loading quizzes...
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-destructive">{error}</TableCell>
-                  </TableRow>
-                ) : quizRows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                      <Inbox className="mx-auto size-8 mb-2 opacity-50" />
-                      No quizzes found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  quizRows.map((r) => (
-                    <TableRow key={r.id} className="group">
-                      <TableCell className="font-semibold">{r.creatorName}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-[220px] truncate" title={r.title}>
-                        {r.title}
-                      </TableCell>
-                      <TableCell>{r.questionCount}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                          {r.attempts} played
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground whitespace-nowrap">{fmtDate(r.createdAt)}</TableCell>
-                      <TableCell className="font-mono font-bold">{r.code}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                          <Button size="sm" variant="ghost" render={<Link href={`/admin/quiz/${r.id}`} />}>
-                            <Eye className="mr-1.5 size-4" /> View
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setToDelete(r)}>
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </div>
+                  )}
+                </TableBody>
+              </Table>
 
         <p className="text-center text-xs text-muted-foreground/60 pt-4">
           Built by <span className="font-semibold text-muted-foreground">Alite</span> · Aura Admin
